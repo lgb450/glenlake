@@ -204,6 +204,34 @@
   .pl-group:first-child { margin-top: 0; }
   .callout { margin: 0 0 10px; padding: 12px 14px; border-left: 6px solid var(--lime); background: var(--surface); border-radius: 10px; font-weight: 700; font-size: 1.1rem; }
 
+  /* slimmer navigation */
+  .topbar { margin: 0 0 8px; }
+  .navrow { display: flex; gap: 10px; margin: 0 0 10px; }
+  .navrow .seg { flex: 1; flex-direction: column; margin: 0; }
+  .navrow .seg button + button { border-top: 2px solid var(--line); }
+  .howto { text-align: left; align-items: stretch; }
+  .howto h2 { text-align: center; }
+  .howcard h3 { font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif; font-weight: 800; font-style: italic; font-size: 1.4rem; margin: 14px 0 4px; }
+  .howcard h3:first-child { margin-top: 0; }
+  .howcard ul { margin: 0; padding-left: 1.2em; }
+  .howcard li { margin: 4px 0; }
+  .howlegend { margin: 6px 0 8px; font-size: 1rem; }
+  .homelinks { align-items: center; gap: 10px; }
+
+  /* ice fills the screen */
+  .rink-wrap { background: none; border: 0; border-radius: 0; padding: 0; max-width: none; margin-left: -16px; margin-right: -16px; }
+  .chip.red { border-color: var(--red); color: var(--red); }
+  .chip.red[aria-pressed="true"] { background: #D6322E; border-color: #D6322E; color: #fff; }
+  @media (min-width: 900px) and (orientation: landscape) {
+    .wrap { max-width: 1100px; }
+    .rink-wrap { margin-left: 0; margin-right: 0; }
+    #panel-learn, #playGame { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 24px; align-items: start; }
+    #panel-learn[hidden], #playGame[hidden] { display: none; }
+    #panel-learn > *, #playGame > * { grid-column: 2; }
+    #panel-learn > .rink-wrap, #playGame > .rink-wrap { grid-column: 1; grid-row: 1 / span 8; position: sticky; top: 8px; width: 100%; max-width: calc(100vh - 24px); justify-self: center; }
+    .home-actions { max-width: 480px; }
+  }
+
   /* coach mode */
   .field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
   .field label, .lbl { font-weight: 800; font-size: 0.95rem; color: var(--ink-soft); }
@@ -258,14 +286,48 @@
       <button class="home-btn alt" id="homePlay" type="button"><span class="t">Play</span><span class="s">Test your knowledge</span></button>
     </div>
     <div class="homelinks">
+      <button class="btn small ghost" id="homeHow" type="button">How to Play</button>
+      <button class="btn small ghost" id="homeBoard" type="button">Team leaderboard</button>
       <button class="linkbtn" id="homeCoach" type="button" hidden>Coach mode</button>
     </div>
   </section>
 
+  <!-- How to play -->
+  <section class="screen howto" id="screen-howto" hidden>
+    <h2>How to Play</h2>
+    <div class="card howcard">
+      <h3>Learn</h3>
+      <ul>
+        <li>Pick a play with the arrows, or tap the play name to see them all.</li>
+        <li>Choose Our zone or Their zone, and Left or Right.</li>
+        <li>Tap a player to see where they go and why. Tap more players to add them.</li>
+        <li>Turn Other Team on or off to see where the other team is. Clear takes everyone off the ice except the puck carrier.</li>
+      </ul>
+      <h3>Play</h3>
+      <ul>
+        <li>Pick a zone and a position, then tap the spot on the ice where your player should go.</li>
+        <li>After you answer, you’ll see where everyone goes.</li>
+        <li>Earn points for every good spot. Keep a streak going for bonus points!</li>
+      </ul>
+      <h3>What you’ll see</h3>
+      <div class="legend howlegend">
+        <span><i class="dot" style="background:#8BC43F;border:2px solid #051537"></i>Glenlake player</span>
+        <span><i class="dot" style="background:#D6322E"></i>Other team</span>
+        <span><i class="dot" style="background:#051537;border:2px solid #fff;box-shadow:0 0 0 1px #051537"></i>Puck</span>
+        <span><i class="dot" style="background:rgba(139,196,63,0.35);border:2px dashed #4F8A12"></i>Good area</span>
+      </div>
+      <p class="muted">Letters on the red dots show whether they are a D (defense) or an F (forward). You always face the other team’s net, so left is the left side of your screen.</p>
+    </div>
+  </section>
+
+  <!-- Team leaderboard (placeholder until scoring is built) -->
+  <section class="screen" id="screen-board" hidden>
+    <h2>Team leaderboard</h2>
+    <p class="sub">Coming soon! Once scoring is ready, jersey numbers and scores will show up here.</p>
+  </section>
+
   <header class="topbar" id="topbar" hidden>
-    <div class="logo small"><img class="logo-img" alt="Glenlake Hawks logo"></div>
-    <div class="topbar-title">U11 Glenlake Hawks 3 Blue</div>
-    <button class="btn small ghost" id="homeBtn" type="button">Home</button>
+    <button class="btn small ghost" id="homeBtn" type="button">‹ Home</button>
   </header>
 
   <div class="banner" id="draftBanner" hidden>
@@ -273,18 +335,8 @@
     <button class="btn small ghost" id="useBaseBtn" type="button">Use the published plays</button>
   </div>
 
-  <div class="tabs" id="tabs" role="tablist" aria-label="Choose a mode" hidden>
-    <button class="tab" role="tab" id="tab-learn" aria-selected="false" aria-controls="panel-learn">Learn</button>
-    <button class="tab" role="tab" id="tab-play" aria-selected="false" aria-controls="panel-play">Play</button>
-    <button class="tab" role="tab" id="tab-coach" aria-selected="false" aria-controls="panel-coach" hidden>Coach mode</button>
-  </div>
-
   <!-- LEARN -->
-  <section class="panel" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
-    <div class="seg" role="group" aria-label="Zone">
-      <button type="button" id="zoneDz" aria-pressed="true">Our zone</button>
-      <button type="button" id="zoneOz" aria-pressed="false">Their zone</button>
-    </div>
+  <section class="panel" id="panel-learn" role="tabpanel" aria-label="Learn" hidden>
     <div class="playbar" id="playBar">
       <button class="navbtn" type="button" id="prevPlay" aria-label="Previous play">‹</button>
       <button class="playname" type="button" id="playName" aria-expanded="false" aria-controls="playList">
@@ -293,27 +345,26 @@
       <button class="navbtn" type="button" id="nextPlay" aria-label="Next play">›</button>
     </div>
     <div class="playlist" id="playList" hidden></div>
-    <div class="seg" id="sideSeg" role="group" aria-label="Side">
-      <button type="button" id="sideLeft" aria-pressed="true">Left</button>
-      <button type="button" id="sideRight" aria-pressed="false">Right</button>
+    <div class="navrow">
+      <div class="seg" role="group" aria-label="Zone">
+        <button type="button" id="zoneDz" aria-pressed="true">Our zone</button>
+        <button type="button" id="zoneOz" aria-pressed="false">Their zone</button>
+      </div>
+      <div class="seg" id="sideSeg" role="group" aria-label="Side">
+        <button type="button" id="sideLeft" aria-pressed="true">Left</button>
+        <button type="button" id="sideRight" aria-pressed="false">Right</button>
+      </div>
     </div>
     <p class="callout" id="learnCallout"></p>
     <div class="rink-wrap">
       <div id="learnRink"></div>
-      <div class="legend">
-        <span><i class="dot" style="background:#8BC43F;border:2px solid #051537"></i>Glenlake player</span>
-        <span><i class="dot" style="background:rgba(139,196,63,0.35);border:2px dashed #4F8A12"></i>Good area for the last player you tapped</span>
-        <span><i class="dot" style="background:#D6322E"></i>Other team</span>
-        <span><i class="dot" style="background:#051537;border:2px solid #fff;box-shadow:0 0 0 1px #051537"></i>Puck</span>
-      </div>
-      <p class="muted" style="margin:8px 4px 0;font-size:0.92rem">Left is the left side of the screen and right is the right side, just like a player sees it facing the other team’s net.</p>
     </div>
     <div class="row" id="roleRow" style="margin-top:12px"></div>
     <div class="card" id="learnCard" style="margin-top:0"></div>
   </section>
 
   <!-- PLAY -->
-  <section class="panel" id="panel-play" role="tabpanel" aria-labelledby="tab-play" hidden>
+  <section class="panel" id="panel-play" role="tabpanel" aria-label="Play" hidden>
     <div id="playStart" class="card" style="margin-top:0">
       <h2>Ready to play?</h2>
       <p>Each play shows where the puck is. Tap the spot on the ice where your player should go. After you answer, you’ll see where everyone goes.</p>
@@ -332,11 +383,6 @@
       <p class="prompt" id="prompt"></p>
       <div class="rink-wrap">
         <div id="playRink"></div>
-        <div class="legend">
-          <span><i class="dot" style="background:#8BC43F;border:2px solid #051537"></i>Glenlake</span>
-          <span><i class="dot" style="background:#D6322E"></i>Other team</span>
-          <span><i class="dot" style="background:#051537;border:2px solid #fff;box-shadow:0 0 0 1px #051537"></i>Puck</span>
-        </div>
       </div>
       <div id="feedback" aria-live="polite"></div>
       <button class="btn alt" id="nextBtn" hidden>Next play</button>
@@ -353,7 +399,7 @@
   </section>
 
   <!-- COACH -->
-  <section class="panel" id="panel-coach" role="tabpanel" aria-labelledby="tab-coach" hidden>
+  <section class="panel" id="panel-coach" role="tabpanel" aria-label="Coach mode" hidden>
     <div class="card" style="margin-top:0">
       <h2>Coach mode</h2>
       <p>Only you see this tab. Open the app with #coach at the end of the link, or tap the logo five times. Pick a situation and every position shows on the rink. Drag the puck or any player circle to the right spot. Tap a player, or use the buttons under the rink, to change that player’s good area and explanation. Changes save on this device. When you are done, open “Copy settings” at the bottom and paste it to Claude.</p>
@@ -433,6 +479,17 @@
           <button class="btn small ghost" id="addOppBtn" type="button">Add an opponent</button>
           <button class="btn small ghost" id="removeOppBtn" type="button">Remove last opponent</button>
         </div>
+        <div class="grid2">
+          <div class="field">
+            <label for="cOppLabel">Letter on the selected red player</label>
+            <input type="text" id="cOppLabel" maxlength="3" placeholder="Tap a red player" disabled>
+          </div>
+          <div class="field">
+            <label for="cPuckLabel">Letter on their puck carrier</label>
+            <input type="text" id="cPuckLabel" maxlength="3">
+          </div>
+        </div>
+        <p class="muted" style="font-size:0.9rem;margin:-4px 0 0">Use D for defense and F for forward.</p>
         <div class="btnrow">
           <button class="btn small ghost" id="newDzBtn" type="button">New our-zone situation</button>
           <button class="btn small ghost" id="newOzBtn" type="button">New their-zone situation</button>
@@ -497,14 +554,14 @@
     var ice = "#F3F9FC", red = "#D6322E", blue = "#1F5FBF";
     // The ice is drawn flat (we attack to the right), then turned so we attack UP the screen: left side = left of the screen.
     var art = el("g", { transform: "matrix(0 -1 1 0 0 600)" }, svg);
-    el("rect", { x: 2, y: 2, width: W - 4, height: H - 4, rx: 70, fill: ice, stroke: "#27384B", "stroke-width": 4 }, art);
+    el("rect", { x: 2, y: 2, width: W - 4, height: H - 4, rx: 70, fill: ice, stroke: "none" }, art);
     // faint line down the middle of the ice: left side above it, right side below it
     el("line", { x1: 8, y1: 127.5, x2: W - 8, y2: 127.5, stroke: "#8FA6BC", "stroke-width": 2, "stroke-dasharray": "8 6", opacity: 0.7 }, art);
-    el("line", { x1: 300, y1: 4, x2: 300, y2: H - 4, stroke: red, "stroke-width": 5, opacity: 0.85 }, art);
-    el("line", { x1: 225, y1: 4, x2: 225, y2: H - 4, stroke: blue, "stroke-width": 7, opacity: 0.85 }, art);
-    el("line", { x1: 375, y1: 4, x2: 375, y2: H - 4, stroke: blue, "stroke-width": 7, opacity: 0.85 }, art);
-    el("line", { x1: 33, y1: 14, x2: 33, y2: H - 14, stroke: red, "stroke-width": 2 }, art);
-    el("line", { x1: 567, y1: 14, x2: 567, y2: H - 14, stroke: red, "stroke-width": 2 }, art);
+    el("line", { x1: 300, y1: 3, x2: 300, y2: H - 3, stroke: red, "stroke-width": 5, opacity: 0.85 }, art);
+    el("line", { x1: 225, y1: 3, x2: 225, y2: H - 3, stroke: blue, "stroke-width": 7, opacity: 0.85 }, art);
+    el("line", { x1: 375, y1: 3, x2: 375, y2: H - 3, stroke: blue, "stroke-width": 7, opacity: 0.85 }, art);
+    el("line", { x1: 33, y1: 18, x2: 33, y2: H - 18, stroke: red, "stroke-width": 2 }, art);
+    el("line", { x1: 567, y1: 18, x2: 567, y2: H - 18, stroke: red, "stroke-width": 2 }, art);
     el("circle", { cx: 300, cy: 127.5, r: 40, fill: "none", stroke: blue, "stroke-width": 2 }, art);
     el("circle", { cx: 300, cy: 127.5, r: 5, fill: blue }, art);
     [[93, 61.5], [93, 193.5], [507, 61.5], [507, 193.5]].forEach(function (p) {
@@ -519,8 +576,24 @@
     });
     el("path", { d: "M33 109.5 A18 18 0 0 1 33 145.5 Z", fill: "#BFE0F5", stroke: red, "stroke-width": 2 }, art);
     el("path", { d: "M567 109.5 A18 18 0 0 0 567 145.5 Z", fill: "#BFE0F5", stroke: red, "stroke-width": 2 }, art);
-    el("rect", { x: 20, y: 115, width: 13, height: 25, fill: "#fff", stroke: "#27384B", "stroke-width": 2 }, art);
-    el("rect", { x: 567, y: 115, width: 13, height: 25, fill: "#fff", stroke: "#27384B", "stroke-width": 2 }, art);
+    // A net seen from above: straight at the goal line, rounded at the back, with an inner line and two posts.
+    function drawNet(gx, dir) {
+      var cy = 127.5, w = 9;
+      function X(d) { return gx + dir * d; }
+      el("path", { d: "M" + gx + "," + (cy - w) + " L" + X(4) + "," + (cy - w) + " C" + X(10) + "," + (cy - w) + " " + X(13) + "," + (cy - w + 3) + " " + X(13) + "," + cy +
+        " C" + X(13) + "," + (cy + w - 3) + " " + X(10) + "," + (cy + w) + " " + X(4) + "," + (cy + w) + " L" + gx + "," + (cy + w) + " Z",
+        fill: "#fff", stroke: red, "stroke-width": 1.8, "stroke-linejoin": "round" }, art);
+      el("path", { d: "M" + gx + "," + (cy - w + 3) + " L" + X(3.5) + "," + (cy - w + 3) + " C" + X(7.5) + "," + (cy - w + 3) + " " + X(9.5) + "," + (cy - w + 5) + " " + X(9.5) + "," + cy +
+        " C" + X(9.5) + "," + (cy + w - 5) + " " + X(7.5) + "," + (cy + w - 3) + " " + X(3.5) + "," + (cy + w - 3) + " L" + gx + "," + (cy + w - 3),
+        fill: "none", stroke: red, "stroke-width": 1.3, "stroke-linejoin": "round" }, art);
+      el("line", { x1: X(9.5), y1: cy, x2: X(13), y2: cy, stroke: red, "stroke-width": 1.3 }, art);
+      el("circle", { cx: gx, cy: cy - w, r: 1.8, fill: red }, art);
+      el("circle", { cx: gx, cy: cy + w, r: 1.8, fill: red }, art);
+    }
+    drawNet(33, -1);
+    drawNet(567, 1);
+    // the boards go on last, so nothing on the ice shows through or on top of them
+    el("rect", { x: 2, y: 2, width: W - 4, height: H - 4, rx: 70, fill: "none", stroke: "#27384B", "stroke-width": 4 }, art);
     // "Left side" / "Right side" labels in the strip of neutral zone each view shows (upright, not turned).
     [[64, 361, "Left side"], [191, 361, "Right side"], [64, 247, "Left side"], [191, 247, "Right side"]].forEach(function (t) {
       el("text", { x: t[0], y: t[1], "text-anchor": "middle", "font-size": 12, "font-weight": 800, fill: "#7C93A9", "font-family": "Nunito Sans, sans-serif" }, svg).textContent = t[2];
@@ -534,23 +607,23 @@
     var c = P(px, py), x = c[0], y = c[1];
     var isUs = color === LIME;
     var g = el("g", { "class": pop ? "pop" : "", style: "transform-origin:" + x + "px " + y + "px" }, layer);
-    el("circle", { cx: x, cy: y, r: 14, fill: color, stroke: isUs ? NAVY : "#fff", "stroke-width": 2.5 }, g);
+    el("circle", { cx: x, cy: y, r: 9, fill: color, stroke: isUs ? NAVY : "#fff", "stroke-width": 1.8 }, g);
     if (letter) {
-      el("text", { x: x, y: y + 5, "text-anchor": "middle", "font-size": 13, "font-weight": 800, fill: isUs ? NAVY : "#fff", "font-family": "Barlow Condensed, Arial Narrow, sans-serif", "pointer-events": "none" }, g).textContent = letter;
+      el("text", { x: x, y: y + 3.4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 800, fill: isUs ? NAVY : "#fff", "font-family": "Barlow Condensed, Arial Narrow, sans-serif", "pointer-events": "none" }, g).textContent = letter;
     }
     return g;
   }
   function puckDot(layer, px, py) {
     var c = P(px, py), x = c[0], y = c[1];
-    return el("circle", { cx: x, cy: y, r: 7, fill: NAVY, stroke: "#fff", "stroke-width": 2 }, layer);
+    return el("circle", { cx: x, cy: y, r: 4.8, fill: NAVY, stroke: "#fff", "stroke-width": 1.4 }, layer);
   }
   function carrierAndPuck(layer, p, skipDot) {
     var g = el("g", {}, layer);
     if (!skipDot) {
       var us = p.has === "us";
-      player(g, p.puck[0] - 12, p.puck[1], us ? LIME : RED, us && p.carrier ? ROLES[p.carrier].letter : "", false);
+      player(g, p.puck[0] - 9, p.puck[1], us ? LIME : RED, us ? (p.carrier ? ROLES[p.carrier].letter : "") : (p.puckLabel || ""), false);
     }
-    puckDot(g, p.puck[0] + 8, p.puck[1] + 4);
+    puckDot(g, p.puck[0] + 6, p.puck[1] + 3);
     return g;
   }
   function goodArea(layer, s, selected) {
@@ -580,96 +653,96 @@
 
   /* ---------- starting plays (Claude’s first draft: coach to adjust) ---------- */
   // spot = [x, y, radius]. Our net is on the left; we attack to the right.
-  var T = {
-    // our zone, they have the puck in the corner
-    strongD: "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can.",
-    weakD: "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice.",
-    cLow: "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot.",
-    wing: "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass.",
-    // our zone, we have the puck (breakout)
-    carry: "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle.",
-    outlet: "Get low on your side and show your stick so your partner has a short pass.",
-    wall: "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass.",
-    wall2: "Stay near the boards on your side, ready for a pass or to help along the wall.",
-    mid: "Come low through the middle so your defenseman has a short pass in the middle.",
-    // our zone, they have the puck up high
-    press: "Pressure their defenseman. Get close enough to take away the shot and the pass.",
-    cover: "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across.",
-    high: "Take the high slot. Block shots and pick up anyone who gets open in the middle.",
-    netD: "Protect the front of the net on your side. Keep your stick on the ice and watch for tips.",
-    // their zone
-    f1: "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure.",
-    f2: "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure.",
-    f3: "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck.",
-    d1: "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it.",
-    d2: "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out.",
-    winF1: "You won the puck. Protect it, then look for F3, the hawk, in the open ice in front of the net.",
-    winF2: "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound.",
-    winF3: "You are the hawk. Get open between the front of the net and the high slot and call for the pass.",
-    winD1: "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point.",
-    winD2: "Slide toward the middle. Be ready for a shot from the point, or to get back if the puck turns over."
-  };
-  // Left means the top of the screen and right means the bottom, the way a player sees it facing the other team’s net.
+  // Starting plays (Coach mode settings). Left means the top of the flat ice and right means the bottom, the way a player sees it facing the other team’s net.
   // "carrier" is the Glenlake position that has the puck, when it is one of our players.
   var SETS = [
-    { k: "dzLeft", phase: "dz", group: "They have the puck", short: "In the corner", side: "left", has: "them", puck: [46, 34], title: "They have the puck in our left corner",
+    { k: "dzLeft", phase: "dz", group: "They have the puck", short: "In the corner", side: "left", puckLabel: "F", has: "them", puck: [27, 49], title: "They have the puck in our left corner",
       text: "The other team has the puck in our left corner.",
-      opp: [[85, 126], [152, 93], [211, 61], [215, 175]],
-      roles: [["C", [118, 92, 40], T.cLow], ["LW", [195, 40, 36], T.wing], ["RW", [195, 215, 36], T.wing],
-              ["LD", [49, 60, 38], T.strongD], ["RD", [67, 122, 34], T.weakD]] },
-    { k: "dzRight", phase: "dz", group: "They have the puck", short: "In the corner", side: "right", has: "them", puck: [39, 211], title: "They have the puck in our right corner",
+      opp: [[72, 127, "F"], [121, 45, "F"], [205, 36, "D"], [206, 159, "D"]],
+      roles: [["C", [94, 70, 40], "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot."],
+              ["LW", [166, 59, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["RW", [168, 194, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["LD", [34, 75, 38], "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can."],
+              ["RD", [65, 112, 34], "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice."]] },
+    { k: "dzRight", phase: "dz", group: "They have the puck", short: "In the corner", side: "right", puckLabel: "F", has: "them", puck: [28, 206], title: "They have the puck in our right corner",
       text: "The other team has the puck in our right corner.",
-      opp: [[85, 123], [150, 169], [212, 198], [215, 80]],
-      roles: [["C", [120, 155, 40], T.cLow], ["LW", [195, 40, 36], T.wing], ["RW", [195, 215, 36], T.wing],
-              ["LD", [71, 125, 34], T.weakD], ["RD", [50, 197, 38], T.strongD]] },
-    { k: "dzBrkLeft", phase: "dz", group: "We have the puck", short: "Breakout", side: "left", has: "us", puck: [48, 50], carrier: "LD", title: "We have the puck in our left corner",
+      opp: [[85, 123, "F"], [143, 192, "F"], [205, 230, "D"], [206, 88, "D"]],
+      roles: [["C", [107, 166, 40], "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot."],
+              ["LW", [163, 86, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["RW", [175, 194, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["LD", [61, 137, 34], "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice."],
+              ["RD", [41, 188, 38], "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can."]] },
+    { k: "dzBrkLeft", phase: "dz", group: "We have the puck", short: "Breakout", side: "left", has: "us", puck: [17, 36], carrier: "LD", title: "We have the puck in our left corner",
       text: "Our left defenseman has the puck in our left corner and is about to start the breakout.",
-      opp: [[52, 73], [143, 76], [90, 127], [230, 60], [230, 190]],
-      roles: [["C", [88, 95, 45], T.mid], ["LW", [103, 19, 36], T.wall], ["RW", [181, 193, 36], T.wall2],
-              ["LD", [34, 48, 30], T.carry], ["RD", [75, 128, 36], T.outlet]] },
-    { k: "dzBrkRight", phase: "dz", group: "We have the puck", short: "Breakout", side: "right", has: "us", puck: [48, 205], carrier: "RD", title: "We have the puck in our right corner",
+      opp: [[22, 74, "F"], [137, 71, "F"], [90, 127, "F"], [194, 30, "D"], [196, 217, "D"]],
+      roles: [["C", [55, 98, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
+              ["LW", [93, 14, 21], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
+              ["RW", [181, 193, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
+              ["LD", [20, 57, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."],
+              ["RD", [73, 117, 36], "Get low on your side and show your stick so your partner has a short pass."]] },
+    { k: "dzBrkRight", phase: "dz", group: "We have the puck", short: "Breakout", side: "right", has: "us", puck: [19, 216], carrier: "RD", title: "We have the puck in our right corner",
       text: "Our right defenseman has the puck in our right corner and is about to start the breakout.",
-      opp: [[62, 171], [108, 195], [150, 140], [230, 195], [230, 65]],
-      roles: [["C", [81, 158, 45], T.mid], ["LW", [183, 59, 36], T.wall2], ["RW", [104, 233, 36], T.wall],
-              ["LD", [71, 121, 36], T.outlet], ["RD", [34, 201, 30], T.carry]] },
-    { k: "dzPtLeft", phase: "dz", group: "They have the puck", short: "Up high", side: "left", has: "them", puck: [209, 31], title: "They have the puck up high on our left side",
+      opp: [[16, 185, "F"], [138, 189, "F"], [81, 129, "F"], [196, 226, "D"], [207, 69, "D"]],
+      roles: [["C", [62, 173, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
+              ["LW", [173, 66, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
+              ["RW", [93, 235, 22], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
+              ["LD", [59, 137, 36], "Get low on your side and show your stick so your partner has a short pass."],
+              ["RD", [21, 203, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."]] },
+    { k: "dzPtLeft", phase: "dz", group: "They have the puck", short: "Up high", side: "left", puckLabel: "D", has: "them", puck: [206, 33], title: "They have the puck up high on our left side",
       text: "The other team has the puck up high near our blue line on the left side.",
-      opp: [[240, 185], [169, 114], [98, 137], [71, 47]],
-      roles: [["C", [140, 112, 40], T.high], ["LW", [175, 59, 34], T.press], ["RW", [196, 178, 36], T.cover],
-              ["LD", [87, 64, 32], T.netD], ["RD", [78, 134, 32], T.netD]] },
-    { k: "dzPtRight", phase: "dz", group: "They have the puck", short: "Up high", side: "right", has: "them", puck: [212, 193], title: "They have the puck up high on our right side",
+      opp: [[209, 190, "D"], [169, 114, "F"], [98, 137, "F"], [71, 47, "F"]],
+      roles: [["C", [140, 112, 40], "Take the high slot. Block shots and pick up anyone who gets open in the middle."],
+              ["LW", [175, 59, 34], "Pressure their defenseman. Get close enough to take away the shot and the pass."],
+              ["RW", [179, 166, 36], "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across."],
+              ["LD", [72, 74, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."],
+              ["RD", [73, 139, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."]] },
+    { k: "dzPtRight", phase: "dz", group: "They have the puck", short: "Up high", side: "right", puckLabel: "D", has: "them", puck: [212, 193], title: "They have the puck up high on our right side",
       text: "The other team has the puck up high near our blue line on the right side.",
-      opp: [[240, 70], [97, 126], [156, 113], [78, 216]],
-      roles: [["C", [138, 123, 40], T.high], ["LW", [195, 55, 36], T.cover], ["RW", [184, 187, 34], T.press],
-              ["LD", [76, 126, 32], T.netD], ["RD", [86, 190, 32], T.netD]] },
-    { k: "ozLeft", phase: "oz", group: "They have the puck", short: "In the corner", side: "left", has: "them", puck: [572, 30], title: "Their defenseman has the puck in the left corner",
+      opp: [[208, 67, "D"], [85, 125, "F"], [156, 113, "F"], [78, 216, "F"]],
+      roles: [["C", [136, 135, 40], "Take the high slot. Block shots and pick up anyone who gets open in the middle."],
+              ["LW", [183, 90, 36], "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across."],
+              ["RW", [178, 177, 34], "Pressure their defenseman. Get close enough to take away the shot and the pass."],
+              ["LD", [65, 137, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."],
+              ["RD", [77, 190, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."]] },
+    { k: "ozLeft", phase: "oz", group: "They have the puck", short: "In the corner", side: "left", puckLabel: "D", has: "them", puck: [572, 30], title: "Their defenseman has the puck in the left corner",
       text: "We dumped the puck in. Their defenseman has it in the left corner and we are chasing it.",
-      opp: [[545, 140], [425, 45], [425, 195], [445, 120]],
-      roles: [["F1", [538, 44, 28], T.f1], ["F2", [503, 66, 32], T.f2], ["F3", [505, 130, 46], T.f3],
-              ["LD", [388, 40, 30], T.d1], ["RD", [388, 152, 34], T.d2]] },
-    { k: "ozRight", phase: "oz", group: "They have the puck", short: "In the corner", side: "right", has: "them", puck: [572, 225], title: "Their defenseman has the puck in the right corner",
+      opp: [[545, 140, "D"], [425, 45, "F"], [425, 195, "F"], [445, 120, "F"]],
+      roles: [["F1", [556, 44, 31], "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure."],
+              ["F2", [513, 64, 34], "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure."],
+              ["F3", [472, 128, 46], "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck."],
+              ["LD", [394, 37, 30], "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it."],
+              ["RD", [391, 155, 34], "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out."]] },
+    { k: "ozRight", phase: "oz", group: "They have the puck", short: "In the corner", side: "right", puckLabel: "D", has: "them", puck: [572, 225], title: "Their defenseman has the puck in the right corner",
       text: "We dumped the puck in. Their defenseman has it in the right corner and we are chasing it.",
-      opp: [[545, 115], [425, 210], [425, 60], [445, 135]],
-      roles: [["F1", [538, 211, 28], T.f1], ["F2", [503, 189, 32], T.f2], ["F3", [505, 125, 46], T.f3],
-              ["LD", [388, 103, 34], T.d2], ["RD", [388, 215, 30], T.d1]] },
+      opp: [[545, 115, "D"], [425, 210, "F"], [425, 60, "F"], [537, 173, "F"]],
+      roles: [["F1", [543, 211, 34], "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure."],
+              ["F2", [503, 189, 32], "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure."],
+              ["F3", [465, 127, 46], "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck."],
+              ["LD", [388, 103, 34], "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out."],
+              ["RD", [388, 215, 30], "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it."]] },
     { k: "ozWinLeft", phase: "oz", group: "We win the puck", short: "In the corner", side: "left", has: "us", puck: [572, 30], carrier: "F1", title: "We win the puck in the left corner",
       text: "F1 just won the puck in the left corner of their zone.",
-      opp: [[585, 72], [545, 140], [425, 45], [425, 195], [445, 120]],
-      roles: [["F1", [556, 36, 28], T.winF1], ["F2", [479, 64, 34], T.winF2], ["F3", [530, 129, 46], T.winF3],
-              ["LD", [388, 40, 30], T.winD1], ["RD", [388, 152, 34], T.winD2]] },
+      opp: [[580, 55, "D"], [542, 116, "D"], [425, 45, "F"], [425, 195, "F"], [445, 120, "F"]],
+      roles: [["F1", [556, 36, 28], "You won the puck. Protect it, then look for F3, the hawk, in the open ice in front of the net."],
+              ["F2", [479, 64, 34], "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound."],
+              ["F3", [521, 126, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
+              ["LD", [388, 40, 30], "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point."],
+              ["RD", [388, 152, 34], "Slide toward the middle. Be ready for a shot from the point, or to get back if the puck turns over."]] },
     { k: "ozWinRight", phase: "oz", group: "We win the puck", short: "In the corner", side: "right", has: "us", puck: [572, 225], carrier: "F1", title: "We win the puck in the right corner",
       text: "F1 just won the puck in the right corner of their zone.",
-      opp: [[585, 183], [545, 115], [425, 210], [425, 60], [445, 135]],
-      roles: [["F1", [556, 219, 28], T.winF1], ["F2", [465, 171, 34], T.winF2], ["F3", [533, 129, 46], T.winF3],
-              ["LD", [388, 103, 34], T.winD2], ["RD", [388, 215, 30], T.winD1]] }
+      opp: [[576, 198, "D"], [544, 137, "D"], [425, 210, "F"], [425, 60, "F"], [489, 152, "F"]],
+      roles: [["F1", [556, 219, 28], "You won the puck. Protect it, then look for F3, the hawk, in the open ice in front of the net."],
+              ["F2", [477, 194, 34], "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound."],
+              ["F3", [521, 126, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
+              ["LD", [388, 103, 34], "Slide toward the middle. Be ready for a shot from the point, or to get back if the puck turns over."],
+              ["RD", [388, 215, 30], "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point."]] }
   ];
-
   function defaults() {
     var out = [];
     SETS.forEach(function (s) {
       s.roles.forEach(function (r) {
         out.push({ id: s.k + "-" + r[0], sid: s.k, role: r[0], phase: s.phase, has: s.has,
-          puck: s.puck.slice(), opp: (s.opp || []).map(function (o) { return o.slice(); }), carrier: s.carrier || "", spots: [r[1].slice()], group: s.group, short: s.short, side: s.side || "", title: s.title, text: s.text, why: r[2] });
+          puck: s.puck.slice(), opp: (s.opp || []).map(function (o) { return o.slice(); }), carrier: s.carrier || "", spots: [r[1].slice()], group: s.group, short: s.short, side: s.side || "", puckLabel: s.puckLabel || "", title: s.title, text: s.text, why: r[2] });
       });
     });
     return out;
@@ -682,13 +755,14 @@
       Array.isArray(p.puck) && p.puck.length === 2 && Array.isArray(p.spots) && p.spots.length > 0 &&
       p.spots.every(function (s) { return Array.isArray(s) && s.length === 3 && s.every(isFinite); });
   }
+  function oppLabel(v) { v = String(v || "").trim().slice(0, 3); return v === "W" || v === "C" ? "F" : v; }
   function normalise(arr) {
     return arr.map(function (p, i) {
       return {
         id: String(p.id || ("p" + i)), sid: String(p.sid || p.id || ("s" + i)), role: p.role, phase: p.phase, has: p.has,
         puck: [Math.round(+p.puck[0]), Math.round(+p.puck[1])],
         spots: p.spots.map(function (s) { return [Math.round(+s[0]), Math.round(+s[1]), Math.round(+s[2])]; }),
-        carrier: ROLES[p.carrier] ? p.carrier : "", opp: Array.isArray(p.opp) ? p.opp.filter(function (o) { return Array.isArray(o) && o.length === 2 && isFinite(o[0]) && isFinite(o[1]); }).map(function (o) { return [Math.round(+o[0]), Math.round(+o[1])]; }) : null, group: String(p.group || ""), short: String(p.short || ""), side: p.side === "left" || p.side === "right" ? p.side : "", title: String(p.title || ""), text: String(p.text || ""), why: String(p.why || "")
+        carrier: ROLES[p.carrier] ? p.carrier : "", opp: Array.isArray(p.opp) ? p.opp.filter(function (o) { return Array.isArray(o) && o.length >= 2 && isFinite(o[0]) && isFinite(o[1]); }).map(function (o) { return oppLabel(o[2]) ? [Math.round(+o[0]), Math.round(+o[1]), oppLabel(o[2])] : [Math.round(+o[0]), Math.round(+o[1])]; }) : null, group: String(p.group || ""), short: String(p.short || ""), puckLabel: oppLabel(p.puckLabel), side: p.side === "left" || p.side === "right" ? p.side : "", title: String(p.title || ""), text: String(p.text || ""), why: String(p.why || "")
       };
     });
   }
@@ -711,6 +785,11 @@
   function fillOpp(list) {
     var d = defaults();
     list.forEach(function (p) {
+      var dm = d.filter(function (x) { return x.sid === p.sid; })[0];
+      if (dm && !p.puckLabel && dm.puckLabel) p.puckLabel = dm.puckLabel;
+      if (dm && Array.isArray(p.opp) && p.opp.length === dm.opp.length && p.opp.length && p.opp.every(function (o) { return o.length < 3; })) {
+        p.opp = p.opp.map(function (o, i) { return dm.opp[i][2] ? [o[0], o[1], dm.opp[i][2]] : o; });
+      }
       if (!p.group || !p.short) {
         var m0 = d.filter(function (x) { return x.sid === p.sid; })[0];
         p.group = p.group || (m0 ? m0.group : "More plays");
@@ -736,7 +815,7 @@
   function serialize() { return serializeList(PLAYS); }
   function serializeList(list) {
     return "[\n" + list.map(function (p) {
-      return JSON.stringify({ id: p.id, sid: p.sid, group: p.group, short: p.short, side: p.side, role: p.role, phase: p.phase, has: p.has, puck: p.puck, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why });
+      return JSON.stringify({ id: p.id, sid: p.sid, group: p.group, short: p.short, side: p.side, puckLabel: p.puckLabel, role: p.role, phase: p.phase, has: p.has, puck: p.puck, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why });
     }).join(",\n") + "\n]";
   }
   function uid() { return "p" + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36); }
@@ -770,15 +849,15 @@
   }
   function groupFor(sid) { return PLAYS.filter(function (p) { return p.sid === sid; }); }
   function playFor(group, role) { for (var i = 0; i < group.length; i++) if (group[i].role === role) return group[i]; return null; }
-  function addChip(row, label, pressed, onClick, dashed) {
+  function addChip(row, label, pressed, onClick, dashed, extra) {
     var b = document.createElement("button");
-    b.className = "chip"; b.type = "button"; b.textContent = label;
+    b.className = "chip" + (extra ? " " + extra : ""); b.type = "button"; b.textContent = label;
     if (pressed !== null) b.setAttribute("aria-pressed", String(pressed));
     if (dashed) b.style.borderStyle = "dashed";
     b.addEventListener("click", onClick);
     row.appendChild(b);
   }
-  var learnKey = null, learnSide = "left";
+  var learnKey = null, learnSide = "left", learnOpp = true;
   // One "play" is everything that shares a group and a short name; its left and right versions are separate situations.
   function playsInZone(phase) {
     var out = [], byKey = {}, groups = [];
@@ -871,8 +950,6 @@
     if (prev === null || (prev.length && !learnSel.length)) learnSel = roles.length ? [roles[0]] : [];
 
     var row = $("roleRow"); row.innerHTML = "";
-    var lab = document.createElement("span"); lab.className = "row-label";
-    lab.textContent = "Tap players to see where they go. Tap more to add them."; row.appendChild(lab);
     roles.forEach(function (r) {
       addChip(row, ROLES[r].short, learnSel.indexOf(r) >= 0, function () {
         var i = learnSel.indexOf(r);
@@ -880,8 +957,11 @@
         renderLearn();
       });
     });
-    addChip(row, "Show everyone", null, function () { learnSel = roles.slice(); learnPop = null; renderLearn(); }, true);
-    addChip(row, "Clear", null, function () { learnSel = []; learnPop = null; renderLearn(); }, true);
+    addChip(row, "Whole team", null, function () { learnSel = roles.slice(); learnPop = null; renderLearn(); }, true);
+    var hasOpp = !!(group[0].opp && group[0].opp.length);
+    if (hasOpp) addChip(row, "Other Team", learnOpp, function () { learnOpp = !learnOpp; renderLearn(); }, false, "red");
+    // Clear takes both teams off the ice; only the puck carrier stays
+    addChip(row, "Clear", null, function () { learnSel = []; learnOpp = false; learnPop = null; renderLearn(); }, true);
 
     var first = group[0];
     var focus = learnSel.length ? learnSel[learnSel.length - 1] : null;
@@ -893,6 +973,8 @@
       var tri = ["F1", "F2", "F3"].map(function (r) { var q = playFor(group, r); return P(q.spots[0][0], q.spots[0][1]).join(","); }).join(" ");
       el("polygon", { points: tri, fill: "rgba(139,196,63,0.35)", stroke: NAVY, "stroke-width": 2.5, "stroke-dasharray": "6 5", "stroke-linejoin": "round" }, learnRink.layer);
     }
+    // the other team's players (the puck carrier stays on the ice either way)
+    if (learnOpp) (first.opp || []).forEach(function (o) { player(learnRink.layer, o[0], o[1], RED, o[2] || "", false); });
     learnSel.forEach(function (r) {
       var q = playFor(group, r);
       player(learnRink.layer, q.spots[0][0], q.spots[0][1], LIME, ROLES[r].letter, r === learnPop);
@@ -992,7 +1074,7 @@
     var grp = groupFor(p.sid);
     p.spots.forEach(function (s) { goodArea(playRink.layer, s, false); });
     carrierAndPuck(playRink.layer, p, !!p.carrier && !!playFor(grp, p.carrier));
-    (p.opp || []).forEach(function (o) { player(playRink.layer, o[0], o[1], RED, "", false); });
+    (p.opp || []).forEach(function (o) { player(playRink.layer, o[0], o[1], RED, o[2] || "", false); });
     grp.forEach(function (q) {
       if (q.role !== p.role) player(playRink.layer, q.spots[0][0], q.spots[0][1], LIME, ROLES[q.role].letter, false);
     });
@@ -1042,7 +1124,7 @@
 
   /* ---------- COACH MODE ---------- */
   var coachRink = buildRink($("coachRink"), "Coach editor. Drag the puck and the player circles.", "coach");
-  var curSid = null, selRole = null, sel = 0, drag = null;
+  var curSid = null, selRole = null, sel = 0, drag = null, selOpp = -1;
   var status = $("cStatus"), status2 = $("cStatus2");
 
   function curGroup() { return curSid ? groupFor(curSid) : []; }
@@ -1100,7 +1182,7 @@
     $("coachEditor").hidden = !g.length;
     if (!g.length) return;
     var f = g[0];
-    $("cTitle").value = f.title; $("cShort").value = f.short; $("cGroup").value = f.group; $("cSide").value = f.side; updateGroupList(f.phase); $("cText").value = f.text; $("cHas").value = f.has; $("cPhaseText").textContent = PHASES[f.phase];
+    $("cTitle").value = f.title; $("cShort").value = f.short; $("cGroup").value = f.group; $("cSide").value = f.side; updateGroupList(f.phase); selOpp = -1; $("cOppLabel").value = ""; $("cOppLabel").disabled = true; $("cPuckLabel").value = f.puckLabel || ""; $("cText").value = f.text; $("cHas").value = f.has; $("cPhaseText").textContent = PHASES[f.phase];
     renderRoleChips(); updateRoleControls();
   }
   function selectSit(sid) {
@@ -1126,13 +1208,14 @@
       });
     });
     (first.opp || []).forEach(function (o, i) {
-      var og = player(layer, o[0], o[1], RED, "", false);
+      if (i === selOpp) el("circle", { cx: P(o[0], o[1])[0], cy: P(o[0], o[1])[1], r: 14, fill: "none", stroke: NAVY, "stroke-width": 3, "stroke-dasharray": "3 3" }, layer);
+      var og = player(layer, o[0], o[1], RED, o[2] || "", false);
       og.style.cursor = "grab";
       og.addEventListener("pointerdown", function (e) { startDrag(e, { type: "opp", i: i }); });
     });
     g.slice().sort(function (a, b) { return (a.role === selRole ? 1 : 0) - (b.role === selRole ? 1 : 0); }).forEach(function (q) {
       q.spots.forEach(function (s, i) {
-        if (q.role === selRole && i === sel) el("circle", { cx: P(s[0], s[1])[0], cy: P(s[0], s[1])[1], r: 20, fill: "none", stroke: NAVY, "stroke-width": 3, "stroke-dasharray": "3 3" }, layer);
+        if (q.role === selRole && i === sel) el("circle", { cx: P(s[0], s[1])[0], cy: P(s[0], s[1])[1], r: 14, fill: "none", stroke: NAVY, "stroke-width": 3, "stroke-dasharray": "3 3" }, layer);
         var tg = player(layer, s[0], s[1], LIME, ROLES[q.role].letter, false);
         tg.style.cursor = "grab";
         tg.addEventListener("pointerdown", function (e) { startDrag(e, { type: "spot", role: q.role, i: i }); });
@@ -1143,6 +1226,11 @@
     e.preventDefault(); e.stopPropagation();
     drag = d;
     if (d.type === "spot") { selRole = d.role; sel = d.i; updateRoleControls(); renderRoleChips(); }
+    if (d.type === "opp") {
+      selOpp = d.i;
+      var o0 = (curGroup()[0] || { opp: [] }).opp[d.i] || [];
+      $("cOppLabel").disabled = false; $("cOppLabel").value = o0[2] || "";
+    }
     try { coachRink.svg.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
   }
   coachRink.svg.addEventListener("pointermove", function (e) {
@@ -1151,7 +1239,7 @@
     if (drag.type === "puck") {
       g.forEach(function (q) { q.puck = [x, y]; });
     } else if (drag.type === "opp") {
-      g.forEach(function (q) { if (q.opp[drag.i]) q.opp[drag.i] = [x, y]; });
+      g.forEach(function (q) { var o = q.opp[drag.i]; if (o) q.opp[drag.i] = o[2] ? [x, y, o[2]] : [x, y]; });
     } else {
       var p = playFor(g, drag.role);
       if (p) { p.spots[drag.i][0] = x; p.spots[drag.i][1] = y; }
@@ -1182,6 +1270,17 @@
   });
   $("cWhy").addEventListener("input", function () { var p = curPlay(); if (p) { p.why = this.value; changed(); } });
   $("cTitle").addEventListener("input", function () { var v = this.value; curGroup().forEach(function (q) { q.title = v; }); changed(); rebuildSitSelect(); });
+  $("cOppLabel").addEventListener("input", function () {
+    if (selOpp < 0) return;
+    var v = this.value.trim().slice(0, 3);
+    curGroup().forEach(function (q) { var o = q.opp[selOpp]; if (o) q.opp[selOpp] = v ? [o[0], o[1], v] : [o[0], o[1]]; });
+    changed(); drawCoach();
+  });
+  $("cPuckLabel").addEventListener("input", function () {
+    var v = this.value.trim().slice(0, 3);
+    curGroup().forEach(function (q) { q.puckLabel = v; });
+    changed(); drawCoach();
+  });
   $("cShort").addEventListener("input", function () { var v = this.value; curGroup().forEach(function (q) { q.short = v; }); changed(); rebuildSitSelect(); });
   $("cGroup").addEventListener("input", function () { var v = this.value; curGroup().forEach(function (q) { q.group = v; }); changed(); rebuildSitSelect(); });
   $("cSide").addEventListener("change", function () { var v = this.value; curGroup().forEach(function (q) { q.side = v; }); changed(); rebuildSitSelect(); });
@@ -1321,12 +1420,9 @@
 
   function showScreen(name) {
     currentScreen = name;
-    var ids = { gate: "screen-gate", home: "screen-home", learn: "panel-learn", play: "panel-play", coach: "panel-coach" };
+    var ids = { gate: "screen-gate", home: "screen-home", howto: "screen-howto", board: "screen-board", learn: "panel-learn", play: "panel-play", coach: "panel-coach" };
     Object.keys(ids).forEach(function (k) { $(ids[k]).hidden = k !== name; });
-    var inApp = name === "learn" || name === "play" || name === "coach";
-    $("topbar").hidden = !inApp;
-    $("tabs").hidden = !inApp;
-    ["learn", "play", "coach"].forEach(function (t) { $("tab-" + t).setAttribute("aria-selected", String(t === name)); });
+    $("topbar").hidden = ["learn", "play", "coach", "howto", "board"].indexOf(name) < 0;
     if (name === "home") renderHome();
     if (name === "learn") renderLearn();
     if (name === "play" && !$("playStart").hidden) renderStart();
@@ -1365,14 +1461,14 @@
   $("homeLearn").addEventListener("click", function () { showScreen("learn"); });
   $("homePlay").addEventListener("click", function () { showScreen("play"); });
   $("homeCoach").addEventListener("click", function () { showScreen("coach"); });
+  $("homeHow").addEventListener("click", function () { showScreen("howto"); });
+  $("homeBoard").addEventListener("click", function () { showScreen("board"); });
   $("homeBtn").addEventListener("click", function () { showScreen("home"); });
-  ["learn", "play", "coach"].forEach(function (t) { $("tab-" + t).addEventListener("click", function () { showScreen(t); }); });
 
   // Coach mode is hidden from players. It shows up when the link ends in #coach,
   // or after five quick taps on the logo.
   function applyCoachVisibility() {
     var on = coachUnlocked || location.hash === "#coach";
-    $("tab-coach").hidden = !on;
     $("homeCoach").hidden = !on;
     if (!on && currentScreen === "coach") showScreen("home");
   }
