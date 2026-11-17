@@ -179,6 +179,16 @@
   .home-btn.alt { background: var(--sel-bg); color: var(--sel-ink); }
   .home-btn .t { font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif; font-weight: 800; font-style: italic; font-size: 2.3rem; line-height: 1; }
   .home-btn .s { font-weight: 700; }
+  .home-btn.chal { background: var(--surface); color: var(--ink); border: 3px solid var(--lime); padding: 15px 17px; }
+  .lb { width: 100%; max-width: 480px; margin: 14px auto 0; display: grid; gap: 8px; }
+  .lbrow { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 10px 14px; font-weight: 800; }
+  .lbrow .rk { flex: none; width: 2.2em; font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-style: italic; font-size: 1.5rem; color: var(--ink-soft); }
+  .lbrow .nm { flex: 1; font-size: 1.3rem; }
+  .lbrow .sc { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-style: italic; font-size: 1.6rem; }
+  .lbrow.me { border-color: var(--lime); background: var(--good-bg); color: #051537; }
+  .lbrow.me .rk { color: #051537; }
+  .lbnote { text-align: center; font-weight: 700; color: var(--ink-soft); margin: 14px 0 0; }
+  #screen-board { text-align: center; }
   .who { margin: 0; font-weight: 800; color: var(--ink-soft); min-height: 1.4em; }
   .homelinks { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; }
   .rink-wrap { max-width: 540px; margin-left: auto; margin-right: auto; }
@@ -296,6 +306,7 @@
     <div class="home-actions">
       <button class="home-btn go" id="homeLearn" type="button"><span class="t">Learn</span><span class="s">Learn your positions</span></button>
       <button class="home-btn alt" id="homePlay" type="button"><span class="t">Play</span><span class="s">Test your knowledge</span></button>
+      <button class="home-btn chal" id="homeChal" type="button"><span class="t">Challenge</span><span class="s">10 plays. Same for everyone. Get on the leaderboard!</span></button>
     </div>
     <div class="homelinks">
       <button class="btn small ghost" id="homeHow" type="button">How to Play</button>
@@ -322,6 +333,12 @@
         <li>After you answer, you’ll see where everyone goes.</li>
         <li>Earn points for every good spot. Keep a streak going for bonus points!</li>
       </ul>
+      <h3>Challenge</h3>
+      <ul>
+        <li>Everyone gets the same 10 plays, in the same order, so scores are fair.</li>
+        <li>Add your jersey number on the home screen to post your best score to the team leaderboard. Only your best score counts, so try again to beat it!</li>
+        <li>Play is for practice and does not go on the leaderboard.</li>
+      </ul>
       <h3>What you’ll see</h3>
       <div class="legend howlegend">
         <span><i class="dot" style="background:#8BC43F;border:2px solid #051537"></i>Glenlake player</span>
@@ -336,7 +353,10 @@
   <!-- Team leaderboard (placeholder until scoring is built) -->
   <section class="screen" id="screen-board" hidden>
     <h2>Team leaderboard</h2>
-    <p class="sub">Coming soon! Once scoring is ready, jersey numbers and scores will show up here.</p>
+    <p class="sub">Best Challenge score for each jersey number.</p>
+    <div class="lb" id="lbList"></div>
+    <p class="lbnote" id="lbNote"></p>
+    <button class="btn alt" id="lbChal" type="button" style="max-width:480px">Play the Challenge</button>
   </section>
 
   <header class="topbar" id="topbar" hidden>
@@ -387,6 +407,14 @@
       <button class="btn" id="startBtn">Start</button>
     </div>
 
+    <div id="chalStart" class="card" hidden style="margin-top:0">
+      <h2>The Challenge</h2>
+      <p>10 plays from both zones. Everyone gets the same plays in the same order. The best score possible is <b id="chalMax"></b>.</p>
+      <p class="muted" id="chalWho"></p>
+      <button class="btn" id="chalGo">Start the Challenge</button>
+      <button class="btn ghost" id="chalBoard">See the leaderboard</button>
+    </div>
+
     <div id="playGame" hidden>
       <div class="hud">
         <div class="stat"><b id="hudRound">1/8</b><small>Play</small></div>
@@ -406,7 +434,9 @@
       <div class="big" id="endScore"></div>
       <p id="endText"></p>
       <div class="badges" id="endBadges"></div>
+      <p class="lbnote" id="endRank" style="text-align:left" hidden></p>
       <button class="btn" id="againBtn">Play again</button>
+      <button class="btn alt" id="endBoardBtn" hidden>See the leaderboard</button>
       <button class="btn ghost" id="changeBtn">Change zone or position</button>
     </div>
   </section>
@@ -1020,6 +1050,7 @@
   /* ---------- PLAY ---------- */
   var area = "dz", posFilter = "any";
   var playRink = buildRink($("playRink"), "Hockey rink. Tap where you think your position should be.", "tappable");
+  var gameMode = "play";
   var order = [], idx = 0, pts = 0, streak = 0, bestStreak = 0, right = 0, answered = false;
 
   function inArea(p) { return p.phase === area; }
@@ -1044,12 +1075,14 @@
     var f = filtered();
     if (!f.length) return;
     order = shuffle(f).slice(0, 8);
+    gameMode = "play";
     idx = 0; pts = 0; streak = 0; bestStreak = 0; right = 0;
     $("playStart").hidden = true; $("playEnd").hidden = true; $("playGame").hidden = false;
     showPlay();
   }
   function showPlay() {
     var p = order[idx];
+    $("hudRound").parentNode.querySelector("small").textContent = gameMode === "challenge" ? "Challenge" : "Play";
     answered = false;
     $("hudRound").textContent = (idx + 1) + "/" + order.length;
     $("hudPts").textContent = pts;
@@ -1112,6 +1145,8 @@
     if (idx === order.length - 1) endGame(); else { idx++; showPlay(); }
   });
   function endGame() {
+    if (gameMode === "challenge") { endChallenge(); return; }
+    $("endRank").hidden = true; $("endBoardBtn").hidden = true; $("changeBtn").hidden = false; $("againBtn").textContent = "Play again";
     $("playGame").hidden = true; $("playEnd").hidden = false;
     var title, text, ratio = right / order.length;
     if (ratio === 1) { title = "All-star!"; text = "You got every play right. Show a teammate!"; }
@@ -1135,6 +1170,113 @@
   $("changeBtn").addEventListener("click", function () {
     $("playEnd").hidden = true; $("playStart").hidden = false; renderStart();
   });
+
+  /* ---------- CHALLENGE + LEADERBOARD ---------- */
+  // Paste the Google Apps Script web-app URL between the quotes to turn the team leaderboard on.
+  var BOARD_URL = "https://script.google.com/macros/s/AKfycbxB6UKFE1SAMtiJLPwTS8PmM09HjLD5MpBMOMB1xQNxZAuiE3RN02pO56p5NggPQkLx_g/exec";
+  var LS_BEST = "glenlake-hawks-chal-best", LS_PENDING = "glenlake-hawks-chal-pending";
+  // The same 10 plays, in this order, for everyone. Zones alternate.
+  var CHALLENGE_IDS = ["dzLeft-LW", "ozLeft-F1", "dzBrkRight-C", "ozRight-F3", "dzPtLeft-RD", "ozWinLeft-F2", "dzRight-LD", "ozRight-F2", "dzBrkLeft-RW", "ozWinRight-F3"];
+  function challengePlays() {
+    var out = [];
+    CHALLENGE_IDS.forEach(function (id) { for (var i = 0; i < PLAYS.length; i++) if (PLAYS[i].id === id) { out.push(PLAYS[i]); break; } });
+    return out;
+  }
+  // 10 points a play, plus 2 for every play from the third right answer in a row on.
+  function challengeMax(n) { return n * 10 + Math.max(0, n - 2) * 2; }
+  function myNumber() { return (lsGet(LS.number) || "").replace(/\D/g, "").slice(0, 3); }
+  function boardOn() { return !!BOARD_URL; }
+  function api(params, cb) {
+    if (!boardOn() || typeof fetch !== "function") { cb(null); return; }
+    var done = false, ctl = (typeof AbortController === "function") ? new AbortController() : null;
+    function finish(v) { if (!done) { done = true; cb(v); } }
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); finish(null); }, 9000);
+    var qs = Object.keys(params).map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]); }).join("&");
+    fetch(BOARD_URL + (BOARD_URL.indexOf("?") < 0 ? "?" : "&") + qs, ctl ? { signal: ctl.signal } : {})
+      .then(function (r) { return r.json(); })
+      .then(function (j) { clearTimeout(timer); finish(j && j.ok ? j : null); })
+      .catch(function () { clearTimeout(timer); finish(null); });
+  }
+  function sendPending(cb) {
+    var n = myNumber(), best = parseInt(lsGet(LS_BEST) || "0", 10), pend = lsGet(LS_PENDING);
+    if (!n || !best || !pend) { cb && cb(null); return; }
+    api({ action: "submit", n: n, s: best }, function (j) { if (j) lsSet(LS_PENDING, ""); cb && cb(j); });
+  }
+  function showChalStart() {
+    var plays = challengePlays();
+    $("playStart").hidden = true; $("playGame").hidden = true; $("playEnd").hidden = true; $("chalStart").hidden = false;
+    $("chalMax").textContent = challengeMax(plays.length);
+    var n = myNumber();
+    $("chalWho").textContent = n ? "Posting as #" + n + "." + (lsGet(LS_BEST) ? " Your best so far: " + lsGet(LS_BEST) + "." : "") : "No jersey number yet. You can play, but your score will not go on the leaderboard. Add it on the home screen.";
+    $("chalGo").disabled = !plays.length;
+  }
+  function startChallenge() {
+    order = challengePlays();
+    if (!order.length) return;
+    gameMode = "challenge";
+    idx = 0; pts = 0; streak = 0; bestStreak = 0; right = 0;
+    $("chalStart").hidden = true; $("playStart").hidden = true; $("playEnd").hidden = true; $("playGame").hidden = false;
+    showPlay();
+  }
+  $("chalGo").addEventListener("click", startChallenge);
+  $("chalBoard").addEventListener("click", function () { showScreen("board"); });
+  function endChallenge() {
+    var n = myNumber(), max = challengeMax(order.length);
+    $("endTitle").textContent = pts >= max ? "Perfect Challenge!" : pts >= max * 0.75 ? "Great Challenge!" : "Challenge done!";
+    $("endScore").textContent = pts + " / " + max;
+    $("endText").textContent = "You got " + right + " of " + order.length + " plays right.";
+    var b = $("endBadges"); b.innerHTML = "";
+    if (bestStreak >= 3) { var s = document.createElement("span"); s.className = "badge"; s.textContent = "Hot streak: " + bestStreak + " in a row"; b.appendChild(s); }
+    var prev = parseInt(lsGet(LS_BEST) || "0", 10), rk = $("endRank");
+    rk.hidden = false;
+    if (!n) { rk.textContent = "Add your jersey number on the home screen to post your score next time."; }
+    else {
+      if (pts === 0 && prev === 0) rk.textContent = "Score at least a point to get on the leaderboard. Try again!";
+      else if (pts > prev) { lsSet(LS_BEST, String(pts)); lsSet(LS_PENDING, "1"); rk.textContent = "New personal best! Posting your score…"; }
+      else rk.textContent = "Your best is " + prev + ". Checking the leaderboard…";
+      if (pts === 0 && prev === 0) { /* nothing to post */ }
+      else if (!boardOn()) rk.textContent = pts > prev ? "New personal best!" : "Your best is " + prev + ".";
+      else {
+        var show = function (j) {
+          if (j && j.you) rk.textContent = "You’re #" + j.you.rank + " on the team leaderboard with " + j.you.best + "!";
+          else rk.textContent = "Couldn’t reach the leaderboard. Your score is saved and will post next time you’re online.";
+        };
+        if (pts > prev || lsGet(LS_PENDING)) sendPending(function (j) { if (j) show(j); else if (lsGet(LS_PENDING)) show(null); else api({ action: "top", n: n }, show); });
+        else api({ action: "top", n: n }, show);
+      }
+    }
+    $("endBoardBtn").hidden = false; $("changeBtn").hidden = true;
+    $("againBtn").textContent = "Try the Challenge again";
+    $("playGame").hidden = true; $("playEnd").hidden = false;
+    $("againBtn").focus({ preventScroll: true });
+  }
+  function renderBoard() {
+    var list = $("lbList"), note = $("lbNote"), n = myNumber();
+    list.innerHTML = ""; note.textContent = "";
+    if (!boardOn()) { note.textContent = "The leaderboard isn’t switched on yet. Ask your coach!"; return; }
+    note.textContent = "Loading…";
+    sendPending(function () {
+      api({ action: "top", n: n }, function (j) {
+        list.innerHTML = "";
+        if (!j) { note.textContent = "Can’t reach the leaderboard right now. Try again later."; return; }
+        var top = j.top || [];
+        if (!top.length) { note.textContent = "No scores yet. Be the first!"; return; }
+        function row(rank, num, score, me) {
+          var r = document.createElement("div"); r.className = "lbrow" + (me ? " me" : "");
+          [["rk", "#" + rank], ["nm", "#" + num], ["sc", String(score)]].forEach(function (x) { var s = document.createElement("span"); s.className = x[0]; s.textContent = x[1]; r.appendChild(s); });
+          list.appendChild(r);
+        }
+        var inTop = false;
+        top.forEach(function (t) { var me = !!n && String(t.n) === n; if (me) inTop = true; row(t.rank, t.n, t.score, me); });
+        if (n && !inTop && j.you) { note.textContent = "You’re #" + j.you.rank + " with " + j.you.best + "."; }
+        else if (!n) note.textContent = "Add your jersey number on the home screen to get on the board.";
+        else if (!j.you) note.textContent = "Play the Challenge to get on the board!";
+        else note.textContent = "";
+      });
+    });
+  }
+  $("lbChal").addEventListener("click", function () { showScreen("challenge"); });
+  $("endBoardBtn").addEventListener("click", function () { showScreen("board"); });
 
   /* ---------- COACH MODE ---------- */
   var coachRink = buildRink($("coachRink"), "Coach editor. Drag the puck and the player circles.", "coach");
@@ -1379,7 +1521,7 @@
   var unlockedThisVisit = false;
   // Team password. Only a hash of it is stored here. It keeps casual visitors out; it is not real security,
   // since anyone can read the code of a public page.
-  var PASSWORD_HASH = "98ab2c506dff73d151c275136d43704230b71bd34874c1e63141dcb21a45e2d4";
+  var PASSWORD_HASH = "191bd38886a188b7becbd536b2bf5fd1ac24b7ed59f691de00a08cfcaa888461";
   var LS = { unlock: "glenlake-hawks-unlocked", number: "glenlake-hawks-number" };
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* not saved */ } }
@@ -1434,12 +1576,17 @@
 
   function showScreen(name) {
     currentScreen = name;
-    var ids = { gate: "screen-gate", home: "screen-home", howto: "screen-howto", board: "screen-board", learn: "panel-learn", play: "panel-play", coach: "panel-coach" };
-    Object.keys(ids).forEach(function (k) { $(ids[k]).hidden = k !== name; });
-    $("topbar").hidden = ["learn", "play", "coach", "howto", "board"].indexOf(name) < 0;
+    var ids = { gate: "screen-gate", home: "screen-home", howto: "screen-howto", board: "screen-board", learn: "panel-learn", play: "panel-play", challenge: "panel-play", coach: "panel-coach" };
+    var target = ids[name];
+    Object.keys(ids).forEach(function (k) { $(ids[k]).hidden = ids[k] !== target; });
+    $("topbar").hidden = ["learn", "play", "challenge", "coach", "howto", "board"].indexOf(name) < 0;
     if (name === "home") renderHome();
     if (name === "learn") renderLearn();
-    if (name === "play" && !$("playStart").hidden) renderStart();
+    if (name === "play") {
+      gameMode = "play"; $("chalStart").hidden = true; $("playGame").hidden = true; $("playEnd").hidden = true; $("playStart").hidden = false; renderStart();
+    }
+    if (name === "challenge") showChalStart();
+    if (name === "board") renderBoard();
     if (name === "coach") {
       if (!curSid || !groupFor(curSid).length) selectSit(firstSid()); else { rebuildSitSelect(); loadControls(); drawCoach(); }
       $("cExport").value = serialize();
@@ -1474,6 +1621,7 @@
   });
   $("homeLearn").addEventListener("click", function () { showScreen("learn"); });
   $("homePlay").addEventListener("click", function () { showScreen("play"); });
+  $("homeChal").addEventListener("click", function () { showScreen("challenge"); });
   $("homeCoach").addEventListener("click", function () { showScreen("coach"); });
   $("homeHow").addEventListener("click", function () { showScreen("howto"); });
   $("homeBoard").addEventListener("click", function () { showScreen("board"); });
