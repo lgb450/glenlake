@@ -232,6 +232,18 @@
     .home-actions { max-width: 480px; }
   }
 
+  /* color-coded plays and the play list icon */
+  .playname { position: relative; padding: 8px 44px; }
+  .burger { position: absolute; right: 12px; top: 50%; width: 24px; height: 24px; margin-top: -12px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+  .playname.them { border-color: var(--red); background: rgba(214, 50, 46, 0.10); }
+  .playname.them .g { color: var(--red); }
+  .playname.us { border-color: var(--lime); background: rgba(139, 196, 63, 0.16); }
+  .playname.us .g { color: var(--good); }
+  .pl-group.them { color: var(--red); }
+  .pl-group.us { color: var(--good); }
+  .chip.green { border-color: var(--good); color: var(--good); }
+  .chip.green[aria-pressed="true"] { background: #8BC43F; border-color: #8BC43F; color: #051537; }
+
   /* coach mode */
   .field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
   .field label, .lbl { font-weight: 800; font-size: 0.95rem; color: var(--ink-soft); }
@@ -301,7 +313,8 @@
         <li>Pick a play with the arrows, or tap the play name to see them all.</li>
         <li>Choose Our zone or Their zone, and Left or Right.</li>
         <li>Tap a player to see where they go and why. Tap more players to add them.</li>
-        <li>Turn Other Team on or off to see where the other team is. Clear takes everyone off the ice except the puck carrier.</li>
+        <li>Whole Team shows or hides all of your players. Other Team does the same for the other team. Clear takes everyone off the ice except the puck carrier.</li>
+        <li>Plays in red are when they have the puck. Plays in green are when we have it.</li>
       </ul>
       <h3>Play</h3>
       <ul>
@@ -339,8 +352,8 @@
   <section class="panel" id="panel-learn" role="tabpanel" aria-label="Learn" hidden>
     <div class="playbar" id="playBar">
       <button class="navbtn" type="button" id="prevPlay" aria-label="Previous play">‹</button>
-      <button class="playname" type="button" id="playName" aria-expanded="false" aria-controls="playList">
-        <span class="g" id="playGroup"></span><span class="n" id="playShort"></span><span class="c" id="playCount"></span>
+      <button class="playname" type="button" id="playName" aria-expanded="false" aria-controls="playList" aria-label="Choose a play">
+        <span class="g" id="playGroup"></span><span class="n" id="playShort"></span><svg class="burger" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
       <button class="navbtn" type="button" id="nextPlay" aria-label="Next play">›</button>
     </div>
@@ -864,7 +877,7 @@
     sorted(PLAYS.filter(function (p) { return p.phase === phase; })).forEach(function (p) {
       var key = p.group + "|" + p.short;
       var e = byKey[key];
-      if (!e) { e = byKey[key] = { key: key, group: p.group, short: p.short, left: null, right: null, one: null }; out.push(e); }
+      if (!e) { e = byKey[key] = { key: key, group: p.group, short: p.short, has: p.has, left: null, right: null, one: null }; out.push(e); }
       if (groups.indexOf(p.group) < 0) groups.push(p.group);
       var slot = p.side === "left" ? "left" : p.side === "right" ? "right" : "one";
       if (!e[slot]) e[slot] = p.sid;
@@ -882,10 +895,10 @@
     list.forEach(function (e) {
       if (e.group !== lastGroup) {
         lastGroup = e.group;
-        var h = document.createElement("div"); h.className = "pl-group"; h.textContent = e.group; box.appendChild(h);
+        var h = document.createElement("div"); h.className = "pl-group " + e.has; h.textContent = e.group; box.appendChild(h);
         row = document.createElement("div"); row.className = "row"; row.style.marginBottom = "0"; box.appendChild(row);
       }
-      addChip(row, e.short, e.key === learnKey, function () { learnKey = e.key; learnPop = null; closePlayList(); renderLearn(); });
+      addChip(row, e.short, e.key === learnKey, function () { learnKey = e.key; learnPop = null; closePlayList(); renderLearn(); }, false, e.has === "them" ? "red" : "green");
     });
   }
   function setLearnZone(z) {
@@ -936,7 +949,7 @@
     var group = groupFor(sidFor(entry, learnSide));
     $("playGroup").textContent = entry.group;
     $("playShort").textContent = entry.short;
-    $("playCount").textContent = (idx + 1) + " of " + list.length;
+    $("playName").className = "playname " + entry.has;
     $("prevPlay").disabled = idx === 0;
     $("nextPlay").disabled = idx === list.length - 1;
     $("sideSeg").hidden = !hasBoth;
@@ -957,7 +970,8 @@
         renderLearn();
       });
     });
-    addChip(row, "Whole team", null, function () { learnSel = roles.slice(); learnPop = null; renderLearn(); }, true);
+    var allOn = roles.length > 0 && roles.every(function (r) { return learnSel.indexOf(r) >= 0; });
+    addChip(row, "Whole Team", allOn, function () { learnSel = allOn ? [] : roles.slice(); learnPop = null; renderLearn(); }, false, "green");
     var hasOpp = !!(group[0].opp && group[0].opp.length);
     if (hasOpp) addChip(row, "Other Team", learnOpp, function () { learnOpp = !learnOpp; renderLearn(); }, false, "red");
     // Clear takes both teams off the ice; only the puck carrier stays
