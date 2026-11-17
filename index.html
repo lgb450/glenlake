@@ -145,6 +145,8 @@
   .badge { background: var(--sel-bg); color: var(--sel-ink); border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 0.95rem; }
 
   .tab[hidden] { display: none; }
+  .banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin-top: 16px; padding: 10px 14px; border: 2px solid var(--close); border-radius: 14px; background: var(--close-bg); color: var(--close); font-weight: 700; }
+  .banner[hidden] { display: none; }
   .pl { display: flex; gap: 12px; align-items: flex-start; margin-top: 12px; }
   .pl .tok {
     flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--lime); color: #051537;
@@ -189,6 +191,11 @@
       <p class="sub">Hockey sense for the Glenlake Hawks U11. Learn zone defense in our zone and the F1, F2, F3 forecheck in their zone, then test yourself. In every picture, we attack to the right.</p>
     </div>
   </header>
+
+  <div class="banner" id="draftBanner" hidden>
+    <span>This device is showing your unpublished coach edits. Other people see the published plays.</span>
+    <button class="btn small ghost" id="useBaseBtn" type="button">Use the published plays</button>
+  </div>
 
   <div class="tabs" role="tablist" aria-label="Choose a mode">
     <button class="tab" role="tab" id="tab-learn" aria-selected="true" aria-controls="panel-learn">Learn</button>
@@ -323,9 +330,14 @@
       </div>
     </div>
 
+    <div class="card">
+      <h2>Published plays</h2>
+      <p id="pubStatus"></p>
+    </div>
+
     <details class="card">
       <summary>Copy settings</summary>
-      <p class="muted">Copy this block and paste it to Claude.</p>
+      <p class="muted">To update the live app, copy this block, open plays.json in your GitHub repository, click the pencil icon, replace everything with this block, and commit. You can also paste it to Claude.</p>
       <textarea id="cExport" class="mono" readonly aria-label="Settings to copy"></textarea>
       <div class="btnrow">
         <button class="btn small" id="copyBtn" type="button">Copy settings</button>
@@ -341,7 +353,7 @@
       </div>
       <div class="btnrow">
         <button class="btn small alt" id="importBtn" type="button">Load pasted settings</button>
-        <button class="btn small danger" id="resetBtn" type="button">Go back to the starting plays</button>
+        <button class="btn small danger" id="resetBtn" type="button">Discard my edits and use the published plays</button>
       </div>
       <div class="status" id="cStatus2" aria-live="polite"></div>
     </details>
@@ -526,12 +538,12 @@
     { k: "ozWinLeft", phase: "oz", has: "us", puck: [572, 30], carrier: "F1", title: "We win the puck in the left corner",
       text: "F1 just won the puck in the left corner of their zone.",
       opp: [[585, 72], [545, 140], [425, 45], [425, 195], [445, 120]],
-      roles: [["F1", [556, 36, 28], T.winF1], ["F2", [527, 128, 34], T.winF2], ["F3", [467, 65, 46], T.winF3],
+      roles: [["F1", [556, 36, 28], T.winF1], ["F2", [479, 64, 34], T.winF2], ["F3", [530, 129, 46], T.winF3],
               ["LD", [388, 40, 30], T.winD1], ["RD", [388, 152, 34], T.winD2]] },
     { k: "ozWinRight", phase: "oz", has: "us", puck: [572, 225], carrier: "F1", title: "We win the puck in the right corner",
       text: "F1 just won the puck in the right corner of their zone.",
       opp: [[585, 183], [545, 115], [425, 210], [425, 60], [445, 135]],
-      roles: [["F1", [556, 219, 28], T.winF1], ["F2", [530, 128, 34], T.winF2], ["F3", [469, 168, 46], T.winF3],
+      roles: [["F1", [556, 219, 28], T.winF1], ["F2", [465, 171, 34], T.winF2], ["F3", [533, 129, 46], T.winF3],
               ["LD", [388, 103, 34], T.winD2], ["RD", [388, 215, 30], T.winD1]] }
   ];
 
@@ -572,7 +584,13 @@
     } catch (e) { /* storage unavailable */ }
     return null;
   }
-  function persist() { try { localStorage.setItem(KEY, JSON.stringify(PLAYS)); } catch (e) { /* ignore */ } }
+  function persist() {
+    try {
+      // only keep a saved copy on this device while it differs from the published plays
+      if (serializeList(PLAYS) === serializeList(BASE)) localStorage.removeItem(KEY);
+      else localStorage.setItem(KEY, JSON.stringify(PLAYS));
+    } catch (e) { /* ignore */ }
+  }
   function fillOpp(list) {
     var d = defaults();
     list.forEach(function (p) {
@@ -583,9 +601,18 @@
     });
     return list;
   }
-  var PLAYS = fillOpp(loadSaved() || defaults());
-  function serialize() {
-    return "[\n" + PLAYS.map(function (p) {
+  function cloneList(list) { return JSON.parse(JSON.stringify(list)); }
+  var BASE = defaults();              // the published plays: plays.json when it loads, otherwise the built-in plays
+  var publishedStatus = "checking";
+  var PLAYS = (function () {
+    var saved = loadSaved();
+    if (saved && serializeList(fillOpp(saved)) !== serializeList(BASE)) return saved;
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    return cloneList(BASE);
+  })();
+  function serialize() { return serializeList(PLAYS); }
+  function serializeList(list) {
+    return "[\n" + list.map(function (p) {
       return JSON.stringify({ id: p.id, sid: p.sid, role: p.role, phase: p.phase, has: p.has, puck: p.puck, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why });
     }).join(",\n") + "\n]";
   }
@@ -826,7 +853,7 @@
   function curGroup() { return curSid ? groupFor(curSid) : []; }
   function curPlay() { return selRole ? playFor(curGroup(), selRole) : null; }
   function firstSid() { var ids = situationIds("dz").concat(situationIds("oz")); return ids.length ? ids[0] : null; }
-  function changed() { persist(); $("cExport").value = serialize(); }
+  function changed() { persist(); $("cExport").value = serialize(); refreshBanner(); refreshPubStatus(); }
   function clampX(v) { return Math.round(Math.max(14, Math.min(586, v))); }
   function clampY(v) { return Math.round(Math.max(14, Math.min(241, v))); }
 
@@ -994,9 +1021,9 @@
     PLAYS = PLAYS.filter(function (q) { return q.sid !== curSid; });
     changed(); selectSit(firstSid());
   });
-  twoTap($("resetBtn"), "Go back to the starting plays", "Tap again to erase my changes", function () {
-    PLAYS = defaults(); changed(); selectSit(firstSid());
-    status2.className = "status"; status2.textContent = "Back to the starting plays.";
+  twoTap($("resetBtn"), "Discard my edits and use the published plays", "Tap again to erase my edits", function () {
+    discardDraft();
+    status2.className = "status"; status2.textContent = "Back to the published plays.";
   });
   $("copyBtn").addEventListener("click", function () {
     var ta = $("cExport"); ta.value = serialize();
@@ -1055,9 +1082,57 @@
   });
   ["learn", "play", "coach"].forEach(function (t) { $("tab-" + t).addEventListener("click", function () { selectTab(t); }); });
 
+  /* ---------- published plays: plays.json next to this page ---------- */
+  function refreshBanner() { $("draftBanner").hidden = serializeList(PLAYS) === serializeList(BASE); }
+  function refreshPubStatus() {
+    var msg = {
+      checking: "Checking for plays.json…",
+      unavailable: "This browser can’t load plays.json, so the built-in plays are being used.",
+      missing: "No plays.json was found next to this page, so the built-in plays are being used. That is normal on the claude.ai link.",
+      invalid: "plays.json was found but could not be read, so the built-in plays are being used. Check that the whole block was pasted, including the square brackets at the start and end.",
+      loaded: "plays.json loaded with " + BASE.length + " plays. Players see these."
+    }[publishedStatus];
+    if (publishedStatus === "loaded" && serializeList(PLAYS) !== serializeList(BASE)) msg += " This device has edits that are not published yet.";
+    $("pubStatus").textContent = msg;
+  }
+  function rerenderAll() {
+    renderLearn(); renderStart();
+    if (!$("panel-coach").hidden) selectSit(curSid && groupFor(curSid).length ? curSid : firstSid());
+    $("cExport").value = serialize();
+    refreshBanner(); refreshPubStatus();
+  }
+  function discardDraft() {
+    PLAYS = cloneList(BASE);
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    rerenderAll();
+  }
+  $("useBaseBtn").addEventListener("click", discardDraft);
+  function loadPublished() {
+    if (!window.fetch) { publishedStatus = "unavailable"; refreshPubStatus(); return; }
+    var p;
+    try { p = fetch("plays.json?v=" + Date.now(), { cache: "no-store" }); } catch (e) { publishedStatus = "missing"; refreshPubStatus(); return; }
+    p.then(function (r) {
+      if (!r.ok) throw new Error("missing");
+      return r.json().then(null, function () { throw new Error("invalid"); });
+    }).then(function (a) {
+      if (!Array.isArray(a) || !a.length || !a.every(isPlay)) throw new Error("invalid");
+      BASE = fillOpp(normalise(a)); publishedStatus = "loaded";
+      var draft = loadSaved();
+      if (draft && serializeList(fillOpp(draft)) !== serializeList(BASE)) PLAYS = draft;
+      else { PLAYS = cloneList(BASE); try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } }
+      rerenderAll();
+    }).then(null, function (e) {
+      publishedStatus = e && e.message === "invalid" ? "invalid" : "missing";
+      refreshPubStatus();
+    });
+  }
+
   applyCoachVisibility();
   renderLearn();
   renderStart();
+  refreshBanner();
+  refreshPubStatus();
+  loadPublished();
 })();
 </script>
 </body>
