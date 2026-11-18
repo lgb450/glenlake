@@ -189,6 +189,7 @@
   .lbrow.me .rk { color: #051537; }
   .lbnote { text-align: center; font-weight: 700; color: var(--ink-soft); margin: 14px 0 0; }
   #screen-board { text-align: center; }
+  .chip.dim { opacity: 0.4; }
   .who { margin: 0; font-weight: 800; color: var(--ink-soft); min-height: 1.4em; }
   .homelinks { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; }
   .rink-wrap { max-width: 540px; margin-left: auto; margin-right: auto; }
@@ -325,6 +326,7 @@
         <li>Choose Our zone or Their zone, and Left or Right.</li>
         <li>Tap a player to see where they go and why. Tap more players to add them.</li>
         <li>Whole Team shows or hides all of your players. Other Team does the same for the other team. Clear takes everyone off the ice except the puck carrier.</li>
+        <li>In Their zone, open the Rotation play and tap Next to watch the forwards switch jobs when the puck moves to the other corner.</li>
         <li>Plays in red are when they have the puck. Plays in green are when we have it.</li>
       </ul>
       <h3>Play</h3>
@@ -699,84 +701,84 @@
   // Starting plays (Coach mode settings). Left means the top of the flat ice and right means the bottom, the way a player sees it facing the other team’s net.
   // "carrier" is the Glenlake position that has the puck, when it is one of our players.
   var SETS = [
-    { k: "dzLeft", phase: "dz", group: "They have the puck", short: "In the corner", side: "left", puckLabel: "F", has: "them", puck: [27, 49], title: "They have the puck in our left corner",
+    { k: "dzLeft", phase: "dz", group: "They have the puck", short: "In the corner", side: "left", puckLabel: "F", has: "them", puck: [46, 34], title: "They have the puck in our left corner",
       text: "The other team has the puck in our left corner.",
-      opp: [[72, 127, "F"], [121, 45, "F"], [205, 36, "D"], [206, 159, "D"]],
-      roles: [["C", [94, 70, 40], "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot."],
-              ["LW", [166, 59, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
-              ["RW", [168, 194, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
-              ["LD", [34, 75, 38], "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can."],
-              ["RD", [65, 112, 34], "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice."]] },
-    { k: "dzRight", phase: "dz", group: "They have the puck", short: "In the corner", side: "right", puckLabel: "F", has: "them", puck: [28, 206], title: "They have the puck in our right corner",
+      opp: [[85, 126, "F"], [152, 93, "F"], [211, 61, "D"], [215, 175, "D"]],
+      roles: [["C", [118, 92, 40], "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot."],
+              ["LW", [195, 40, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["RW", [186, 175, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["LD", [49, 60, 38], "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can."],
+              ["RD", [67, 122, 34], "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice."]] },
+    { k: "dzRight", phase: "dz", group: "They have the puck", short: "In the corner", side: "right", puckLabel: "F", has: "them", puck: [39, 211], title: "They have the puck in our right corner",
       text: "The other team has the puck in our right corner.",
-      opp: [[85, 123, "F"], [143, 192, "F"], [205, 230, "D"], [206, 88, "D"]],
-      roles: [["C", [107, 166, 40], "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot."],
-              ["LW", [163, 86, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
-              ["RW", [175, 194, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
-              ["LD", [61, 137, 34], "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice."],
-              ["RD", [41, 188, 38], "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can."]] },
-    { k: "dzBrkLeft", phase: "dz", group: "We have the puck", short: "Breakout", side: "left", has: "us", puck: [17, 36], carrier: "LD", title: "We have the puck in our left corner",
+      opp: [[85, 123, "F"], [150, 169, "F"], [212, 198, "D"], [215, 80, "D"]],
+      roles: [["C", [120, 155, 40], "Support low on the puck side. Stay close enough to help in the corner and take away a pass to the slot."],
+              ["LW", [187, 85, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["RW", [195, 215, 36], "Stay below the blue line on your side so you can cover their defenseman and still have a lane to the boards for a breakout pass."],
+              ["LD", [71, 125, 34], "You are on the far side. Protect the front of the net and stay between the puck and the net. Keep your stick on the ice."],
+              ["RD", [50, 197, 38], "You are on the puck side. Pressure the player with the puck in the corner. Take away time and space, and finish your check if you can."]] },
+    { k: "dzBrkLeft", phase: "dz", group: "We have the puck", short: "Breakout", side: "left", puckLabel: "", has: "us", puck: [48, 50], carrier: "LD", title: "We have the puck in our left corner",
       text: "Our left defenseman has the puck in our left corner and is about to start the breakout.",
-      opp: [[22, 74, "F"], [137, 71, "F"], [90, 127, "F"], [194, 30, "D"], [196, 217, "D"]],
-      roles: [["C", [55, 98, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
-              ["LW", [93, 14, 21], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
-              ["RW", [181, 193, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
-              ["LD", [20, 57, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."],
-              ["RD", [73, 117, 36], "Get low on your side and show your stick so your partner has a short pass."]] },
-    { k: "dzBrkRight", phase: "dz", group: "We have the puck", short: "Breakout", side: "right", has: "us", puck: [19, 216], carrier: "RD", title: "We have the puck in our right corner",
+      opp: [[52, 73, "F"], [143, 76, "F"], [90, 127, "F"], [193, 31, "D"], [223, 194, "D"]],
+      roles: [["C", [88, 95, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
+              ["LW", [93, 15, 36], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
+              ["RW", [170, 193, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
+              ["LD", [34, 48, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."],
+              ["RD", [75, 128, 36], "Get low on your side and show your stick so your partner has a short pass."]] },
+    { k: "dzBrkRight", phase: "dz", group: "We have the puck", short: "Breakout", side: "right", puckLabel: "", has: "us", puck: [48, 205], carrier: "RD", title: "We have the puck in our right corner",
       text: "Our right defenseman has the puck in our right corner and is about to start the breakout.",
-      opp: [[16, 185, "F"], [138, 189, "F"], [81, 129, "F"], [196, 226, "D"], [207, 69, "D"]],
-      roles: [["C", [62, 173, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
-              ["LW", [173, 66, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
-              ["RW", [93, 235, 22], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
-              ["LD", [59, 137, 36], "Get low on your side and show your stick so your partner has a short pass."],
-              ["RD", [21, 203, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."]] },
-    { k: "dzPtLeft", phase: "dz", group: "They have the puck", short: "Up high", side: "left", puckLabel: "D", has: "them", puck: [206, 33], title: "They have the puck up high on our left side",
+      opp: [[62, 171, "F"], [108, 195, "F"], [150, 140, "F"], [230, 195, "D"], [230, 65, "D"]],
+      roles: [["C", [81, 158, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
+              ["LW", [183, 69, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
+              ["RW", [95, 233, 36], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
+              ["LD", [71, 121, 36], "Get low on your side and show your stick so your partner has a short pass."],
+              ["RD", [34, 201, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."]] },
+    { k: "dzPtLeft", phase: "dz", group: "They have the puck", short: "Up high", side: "left", puckLabel: "D", has: "them", puck: [209, 31], title: "They have the puck up high on our left side",
       text: "The other team has the puck up high near our blue line on the left side.",
-      opp: [[209, 190, "D"], [169, 114, "F"], [98, 137, "F"], [71, 47, "F"]],
+      opp: [[240, 185, "D"], [169, 114, "F"], [98, 137, "F"], [71, 47, "F"]],
       roles: [["C", [140, 112, 40], "Take the high slot. Block shots and pick up anyone who gets open in the middle."],
               ["LW", [175, 59, 34], "Pressure their defenseman. Get close enough to take away the shot and the pass."],
-              ["RW", [179, 166, 36], "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across."],
-              ["LD", [72, 74, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."],
-              ["RD", [73, 139, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."]] },
+              ["RW", [196, 178, 36], "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across."],
+              ["LD", [87, 64, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."],
+              ["RD", [78, 134, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."]] },
     { k: "dzPtRight", phase: "dz", group: "They have the puck", short: "Up high", side: "right", puckLabel: "D", has: "them", puck: [212, 193], title: "They have the puck up high on our right side",
       text: "The other team has the puck up high near our blue line on the right side.",
-      opp: [[208, 67, "D"], [85, 125, "F"], [156, 113, "F"], [78, 216, "F"]],
-      roles: [["C", [136, 135, 40], "Take the high slot. Block shots and pick up anyone who gets open in the middle."],
-              ["LW", [183, 90, 36], "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across."],
-              ["RW", [178, 177, 34], "Pressure their defenseman. Get close enough to take away the shot and the pass."],
-              ["LD", [65, 137, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."],
-              ["RD", [77, 190, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."]] },
+      opp: [[240, 70, "D"], [97, 126, "F"], [156, 113, "F"], [78, 216, "F"]],
+      roles: [["C", [138, 123, 40], "Take the high slot. Block shots and pick up anyone who gets open in the middle."],
+              ["LW", [195, 55, 36], "Stay on your side below the blue line and cover the other defenseman. Be ready to slide over if the puck is passed across."],
+              ["RW", [184, 187, 34], "Pressure their defenseman. Get close enough to take away the shot and the pass."],
+              ["LD", [76, 126, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."],
+              ["RD", [86, 190, 32], "Protect the front of the net on your side. Keep your stick on the ice and watch for tips."]] },
     { k: "ozLeft", phase: "oz", group: "They have the puck", short: "In the corner", side: "left", puckLabel: "D", has: "them", puck: [572, 30], title: "Their defenseman has the puck in the left corner",
       text: "We dumped the puck in. Their defenseman has it in the left corner and we are chasing it.",
-      opp: [[545, 140, "D"], [425, 45, "F"], [425, 195, "F"], [445, 120, "F"]],
-      roles: [["F1", [556, 44, 31], "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure."],
-              ["F2", [513, 64, 34], "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure."],
-              ["F3", [472, 128, 46], "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck."],
-              ["LD", [394, 37, 30], "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it."],
-              ["RD", [391, 155, 34], "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out."]] },
+      opp: [[531, 126, "D"], [445, 58, "F"], [446, 193, "F"], [445, 120, "F"]],
+      roles: [["F1", [553, 45, 28], "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure."],
+              ["F2", [526, 61, 32], "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure."],
+              ["F3", [490, 127, 46], "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck."],
+              ["LD", [407, 36, 30], "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it."],
+              ["RD", [408, 159, 30], "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out."]] },
     { k: "ozRight", phase: "oz", group: "They have the puck", short: "In the corner", side: "right", puckLabel: "D", has: "them", puck: [572, 225], title: "Their defenseman has the puck in the right corner",
       text: "We dumped the puck in. Their defenseman has it in the right corner and we are chasing it.",
-      opp: [[545, 115, "D"], [425, 210, "F"], [425, 60, "F"], [537, 173, "F"]],
-      roles: [["F1", [543, 211, 34], "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure."],
-              ["F2", [503, 189, 32], "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure."],
-              ["F3", [465, 127, 46], "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck."],
-              ["LD", [388, 103, 34], "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out."],
-              ["RD", [388, 215, 30], "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it."]] },
-    { k: "ozWinLeft", phase: "oz", group: "We win the puck", short: "In the corner", side: "left", has: "us", puck: [572, 30], carrier: "F1", title: "We win the puck in the left corner",
+      opp: [[545, 115, "D"], [450, 197, "F"], [449, 60, "F"], [445, 135, "F"]],
+      roles: [["F1", [554, 216, 28], "You are the dog. Be hard on the puck. Go right at the player who has it so they feel pressure right away. With F2, you give their defenseman two-man pressure."],
+              ["F2", [530, 191, 32], "You are the fox. Get close to F1 to support. Be ready to steal the puck when F1 pressures. With F1, you give their defenseman two-man pressure."],
+              ["F3", [497, 130, 46], "You are the hawk. Circle between the front of the net and the high slot so you are open for a pass when F1 or F2 wins the puck."],
+              ["LD", [403, 103, 30], "You are on the far side. Slide toward the middle so you can keep the puck in and get back if they break out."],
+              ["RD", [400, 222, 30], "You are on the puck side. Hold the blue line, ready to keep the puck in and to help when F1 and F2 win it."]] },
+    { k: "ozWinLeft", phase: "oz", group: "We win the puck", short: "In the corner", side: "left", puckLabel: "", has: "us", puck: [572, 30], carrier: "F1", title: "We win the puck in the left corner",
       text: "F1 just won the puck in the left corner of their zone.",
-      opp: [[580, 55, "D"], [542, 116, "D"], [425, 45, "F"], [425, 195, "F"], [445, 120, "F"]],
+      opp: [[583, 58, "D"], [545, 140, "D"], [425, 45, "F"], [425, 195, "F"], [445, 120, "F"]],
       roles: [["F1", [556, 36, 28], "You won the puck. Protect it, then look for F3, the hawk, in the open ice in front of the net."],
               ["F2", [479, 64, 34], "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound."],
-              ["F3", [521, 126, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
+              ["F3", [528, 127, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
               ["LD", [388, 40, 30], "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point."],
               ["RD", [388, 152, 34], "Slide toward the middle. Be ready for a shot from the point, or to get back if the puck turns over."]] },
-    { k: "ozWinRight", phase: "oz", group: "We win the puck", short: "In the corner", side: "right", has: "us", puck: [572, 225], carrier: "F1", title: "We win the puck in the right corner",
+    { k: "ozWinRight", phase: "oz", group: "We win the puck", short: "In the corner", side: "right", puckLabel: "", has: "us", puck: [572, 225], carrier: "F1", title: "We win the puck in the right corner",
       text: "F1 just won the puck in the right corner of their zone.",
-      opp: [[576, 198, "D"], [544, 137, "D"], [425, 210, "F"], [425, 60, "F"], [489, 152, "F"]],
+      opp: [[585, 183, "D"], [545, 115, "D"], [425, 210, "F"], [425, 60, "F"], [445, 135, "F"]],
       roles: [["F1", [556, 219, 28], "You won the puck. Protect it, then look for F3, the hawk, in the open ice in front of the net."],
-              ["F2", [477, 194, 34], "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound."],
-              ["F3", [521, 126, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
+              ["F2", [465, 171, 34], "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound."],
+              ["F3", [533, 129, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
               ["LD", [388, 103, 34], "Slide toward the middle. Be ready for a shot from the point, or to get back if the puck turns over."],
               ["RD", [388, 215, 30], "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point."]] }
   ];
@@ -912,6 +914,8 @@
       var slot = p.side === "left" ? "left" : p.side === "right" ? "right" : "one";
       if (!e[slot]) e[slot] = p.sid;
     });
+    // the rotation lesson is built from the two corner plays, so it only shows when both exist
+    if (phase === "oz" && rotationReady()) out.push({ key: "rotation|switch", group: "They have the puck", short: "Rotation", has: "them", left: "ozLeft", right: "ozRight", one: null, special: "rotation" });
     // keep plays of the same group together, in the order the groups first appear
     return out.map(function (e, i) { return { e: e, i: i }; }).sort(function (a, b) {
       return (groups.indexOf(a.e.group) - groups.indexOf(b.e.group)) || (a.i - b.i);
@@ -947,8 +951,8 @@
   $("zoneOz").addEventListener("click", function () { setLearnZone("oz"); });
   $("prevPlay").addEventListener("click", function () { stepPlay(-1); });
   $("nextPlay").addEventListener("click", function () { stepPlay(1); });
-  $("sideLeft").addEventListener("click", function () { learnSide = "left"; renderLearn(); });
-  $("sideRight").addEventListener("click", function () { learnSide = "right"; renderLearn(); });
+  $("sideLeft").addEventListener("click", function () { if (learnSide !== "left") rotStep = 0; learnSide = "left"; renderLearn(); });
+  $("sideRight").addEventListener("click", function () { if (learnSide !== "right") rotStep = 0; learnSide = "right"; renderLearn(); });
   $("playName").addEventListener("click", function () {
     var open = $("playList").hidden;
     if (open) renderPlayList(playsInZone(learnZone));
@@ -974,6 +978,17 @@
     list.forEach(function (e, n) { if (e.key === learnKey) idx = n; });
     if (idx < 0) { idx = 0; learnKey = list[0].key; }
     var entry = list[idx];
+    if (entry.special === "rotation") {
+      $("playGroup").textContent = entry.group; $("playShort").textContent = entry.short;
+      $("playName").className = "playname " + entry.has;
+      $("prevPlay").disabled = idx === 0; $("nextPlay").disabled = idx === list.length - 1;
+      $("sideSeg").hidden = false;
+      $("sideLeft").setAttribute("aria-pressed", String(learnSide === "left"));
+      $("sideRight").setAttribute("aria-pressed", String(learnSide === "right"));
+      renderRotation();
+      return;
+    }
+    rotStep = 0;
     var hasBoth = !!(entry.left && entry.right);
     if (!hasBoth) learnSide = entry.right && !entry.left ? "right" : "left";
     var group = groupFor(sidFor(entry, learnSide));
@@ -1045,6 +1060,105 @@
         card.appendChild(tn);
       }
     }
+  }
+
+  /* ---------- LEARN: the forecheck rotation ---------- */
+  // The puck is passed to the other corner and the forwards switch jobs: F3 becomes F1, F1 becomes F2, F2 becomes F3.
+  // It is built from the existing left and right corner plays, so Coach mode edits carry over.
+  var rotStep = 0, ROT_LAST = 5;
+  var ROT_NEW = { F3: "F1", F1: "F2", F2: "F3" };   // old job -> new job
+  var ROT_AT = { F3: 2, F1: 3, F2: 4 };             // the step each forward moves on
+  var ROT_NAME = { F1: "dog", F2: "fox", F3: "hawk" };
+  function rotationReady() {
+    return ["ozLeft", "ozRight"].every(function (sid) {
+      var g = groupFor(sid);
+      return ["F1", "F2", "F3", "LD", "RD"].every(function (r) { return !!playFor(g, r); });
+    });
+  }
+  function arrowTo(layer, a, b, color) {
+    var p = P(a[0], a[1]), q = P(b[0], b[1]);
+    var dx = q[0] - p[0], dy = q[1] - p[1], len = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / len, uy = dy / len;
+    var sx = p[0] + ux * 11, sy = p[1] + uy * 11, ex = q[0] - ux * 11, ey = q[1] - uy * 11;
+    if (len < 26) return;
+    el("line", { x1: sx, y1: sy, x2: ex, y2: ey, stroke: color, "stroke-width": 2.4, "stroke-dasharray": "6 4", "stroke-linecap": "round" }, layer);
+    el("polygon", { points: [[ex, ey], [ex - ux * 9 - uy * 5, ey - uy * 9 + ux * 5], [ex - ux * 9 + uy * 5, ey - uy * 9 - ux * 5]].map(function (v) { return v.join(","); }).join(" "), fill: color }, layer);
+  }
+  function ghost(layer, spot, letter) {
+    var c = P(spot[0], spot[1]);
+    el("circle", { cx: c[0], cy: c[1], r: 9, fill: "rgba(139,196,63,0.12)", stroke: "#4F8A12", "stroke-width": 1.6, "stroke-dasharray": "3 3" }, layer);
+    el("text", { x: c[0], y: c[1] + 3.4, "text-anchor": "middle", "font-size": 9, "font-weight": 800, fill: "#4F8A12", "font-family": "Barlow Condensed, Arial Narrow, sans-serif", opacity: 0.8 }, layer).textContent = letter;
+  }
+  function rotationText(step, from, to) {
+    var a = from === "left" ? "left" : "right", b = from === "left" ? "right" : "left";
+    return [
+      "Their defenseman has the puck in the " + a + " corner. F1, the dog, is on the puck. F2, the fox, is close. F3, the hawk, is in front of the net.",
+      "Their defenseman passes the puck across to the " + b + " corner. Our forwards have to switch jobs.",
+      "F3, the hawk, is closest to the puck now. F3 becomes the new F1, the dog, and goes hard at the puck.",
+      "F1 leaves the " + a + " corner and becomes the new F2, the fox. Stay close and support the dog.",
+      "F2 becomes the new F3, the hawk. Circle between the front of the net and the high slot.",
+      "Our defensemen slide over too. The hawk is now the dog, the dog is now the fox, and the fox is now the hawk."
+    ][step];
+  }
+  function renderRotation() {
+    var L = learnRink.layer;
+    var from = learnSide, a = groupFor(from === "left" ? "ozLeft" : "ozRight"), b = groupFor(from === "left" ? "ozRight" : "ozLeft");
+    var start = a[0], end = b[0], step = rotStep;
+    clear(L); setZone(learnRink, "oz");
+    // the other team follows the puck to the new corner
+    var opps = (step >= 2 ? end : start).opp || [];
+    opps.forEach(function (o) { player(L, o[0], o[1], RED, o[2] || "", false); });
+    // the puck
+    if (step < 1) carrierAndPuck(L, start, false);
+    else {
+      if (step >= 2) carrierAndPuck(L, end, false);
+      else {
+        carrierAndPuck(L, start, true);
+        var p0 = P(start.puck[0] + 6, start.puck[1] + 3), p1 = P(end.puck[0] + 6, end.puck[1] + 3);
+        el("path", { d: "M" + p0[0] + "," + p0[1] + " Q" + (p0[0] + p1[0]) / 2 + "," + 5 + " " + p1[0] + "," + p1[1], fill: "none", stroke: NAVY, "stroke-width": 2.6, "stroke-dasharray": "7 5", "stroke-linecap": "round" }, L);
+        puckDot(L, end.puck[0] + 6, end.puck[1] + 3);
+        player(L, start.puck[0] - 9, start.puck[1], RED, start.puckLabel || "", false);
+      }
+    }
+    // defensemen shift at the last step
+    ["LD", "RD"].forEach(function (r) {
+      var o = playFor(a, r).spots[0], n = playFor(b, r).spots[0];
+      if (step >= ROT_LAST) { ghost(L, o, ROLES[r].letter); arrowTo(L, o, n, "#4F8A12"); player(L, n[0], n[1], LIME, ROLES[r].letter, step === ROT_LAST); }
+      else player(L, o[0], o[1], LIME, ROLES[r].letter, false);
+    });
+    // forwards: still on their old spot until their step, then on the new spot with a ghost and a dashed path
+    var newPos = [];
+    ["F1", "F2", "F3"].forEach(function (r) {
+      var o = playFor(a, r).spots[0], nr = ROT_NEW[r], n = playFor(b, nr).spots[0];
+      if (step >= ROT_AT[r]) {
+        ghost(L, o, r); arrowTo(L, o, n, "#4F8A12");
+        newPos.push([n, nr, step === ROT_AT[r]]);
+      } else player(L, o[0], o[1], LIME, r, false);
+    });
+    newPos.forEach(function (x) { player(L, x[0][0], x[0][1], LIME, x[1], x[2]); });
+    if (step >= ROT_LAST) {
+      var tri = ["F1", "F2", "F3"].map(function (r) { var q = playFor(b, r).spots[0]; return P(q[0], q[1]).join(","); }).join(" ");
+      el("polygon", { points: tri, fill: "rgba(139,196,63,0.25)", stroke: NAVY, "stroke-width": 2.5, "stroke-dasharray": "6 5", "stroke-linejoin": "round" }, L);
+    }
+    $("learnCallout").textContent = rotationText(step, from);
+    // controls: Back, Next, Start over
+    var row = $("roleRow"); row.innerHTML = "";
+    var label = document.createElement("span"); label.className = "row-label"; label.textContent = "Step " + (step + 1) + " of " + (ROT_LAST + 1); row.appendChild(label);
+    addChip(row, "‹ Back", null, function () { if (rotStep > 0) { rotStep--; renderLearn(); } }, false, step === 0 ? "dim" : "");
+    addChip(row, step === ROT_LAST ? "Watch again" : "Next ›", null, function () { rotStep = step === ROT_LAST ? 0 : rotStep + 1; renderLearn(); }, false, "green");
+    // card: who becomes who
+    var card = $("learnCard"); card.innerHTML = "";
+    var h = document.createElement("strong"); h.textContent = "Who becomes who"; card.appendChild(h);
+    ["F3", "F1", "F2"].forEach(function (r) {
+      var done = step >= ROT_AT[r], now = step === ROT_AT[r];
+      var item = document.createElement("div"); item.className = "pl" + (now ? " focus" : ""); item.style.opacity = done ? "1" : "0.5";
+      var tok = document.createElement("span"); tok.className = "tok"; tok.textContent = r; item.appendChild(tok);
+      var body = document.createElement("div");
+      var st = document.createElement("strong"); st.textContent = r + " (" + ROT_NAME[r] + ") becomes " + ROT_NEW[r] + " (" + ROT_NAME[ROT_NEW[r]] + ")"; body.appendChild(st);
+      item.appendChild(body); card.appendChild(item);
+    });
+    var tip = document.createElement("div"); tip.className = "tip";
+    tip.textContent = "Dashed circles show where each player started. Dashed arrows show where they skate.";
+    card.appendChild(tip);
   }
 
   /* ---------- PLAY ---------- */
