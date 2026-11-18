@@ -326,6 +326,7 @@
         <li>Choose Our zone or Their zone, and Left or Right.</li>
         <li>Tap a player to see where they go and why. Tap more players to add them.</li>
         <li>Whole Team shows or hides all of your players. Other Team does the same for the other team. Clear takes everyone off the ice except the puck carrier.</li>
+        <li>In Their zone, open Win the puck to watch F1 pressure, F2 support, and F3 get open once F1 wins the puck.</li>
         <li>In Their zone, open the Rotation play and tap Next to watch the forwards switch jobs when the puck moves to the other corner.</li>
         <li>Plays in red are when they have the puck. Plays in green are when we have it.</li>
       </ul>
@@ -916,6 +917,7 @@
     });
     // the rotation lesson is built from the two corner plays, so it only shows when both exist
     if (phase === "oz" && rotationReady()) out.push({ key: "rotation|switch", group: "They have the puck", short: "Rotation", has: "them", left: "ozLeft", right: "ozRight", one: null, special: "rotation" });
+    if (phase === "oz" && pressureReady()) out.push({ key: "rotation|pressure", group: "They have the puck", short: "Win the puck", has: "them", left: "ozLeft", right: "ozRight", one: null, special: "pressure" });
     // keep plays of the same group together, in the order the groups first appear
     return out.map(function (e, i) { return { e: e, i: i }; }).sort(function (a, b) {
       return (groups.indexOf(a.e.group) - groups.indexOf(b.e.group)) || (a.i - b.i);
@@ -978,17 +980,18 @@
     list.forEach(function (e, n) { if (e.key === learnKey) idx = n; });
     if (idx < 0) { idx = 0; learnKey = list[0].key; }
     var entry = list[idx];
-    if (entry.special === "rotation") {
+    if (entry.special) {
+      if (rotKey !== entry.key) { rotStep = 0; rotKey = entry.key; }
       $("playGroup").textContent = entry.group; $("playShort").textContent = entry.short;
       $("playName").className = "playname " + entry.has;
       $("prevPlay").disabled = idx === 0; $("nextPlay").disabled = idx === list.length - 1;
       $("sideSeg").hidden = false;
       $("sideLeft").setAttribute("aria-pressed", String(learnSide === "left"));
       $("sideRight").setAttribute("aria-pressed", String(learnSide === "right"));
-      renderRotation();
+      if (entry.special === "pressure") renderPressure(); else renderRotation();
       return;
     }
-    rotStep = 0;
+    rotStep = 0; rotKey = null;
     var hasBoth = !!(entry.left && entry.right);
     if (!hasBoth) learnSide = entry.right && !entry.left ? "right" : "left";
     var group = groupFor(sidFor(entry, learnSide));
@@ -1065,7 +1068,7 @@
   /* ---------- LEARN: the forecheck rotation ---------- */
   // The puck is passed to the other corner and the forwards switch jobs: F3 becomes F1, F1 becomes F2, F2 becomes F3.
   // It is built from the existing left and right corner plays, so Coach mode edits carry over.
-  var rotStep = 0, ROT_LAST = 5;
+  var rotStep = 0, rotKey = null, ROT_LAST = 5;
   var ROT_NEW = { F3: "F1", F1: "F2", F2: "F3" };   // old job -> new job
   var ROT_AT = { F3: 2, F1: 3, F2: 4 };             // the step each forward moves on
   var ROT_NAME = { F1: "dog", F2: "fox", F3: "hawk" };
@@ -1159,6 +1162,88 @@
     var tip = document.createElement("div"); tip.className = "tip";
     tip.textContent = "Dashed circles show where each player started. Dashed arrows show where they skate.";
     card.appendChild(tip);
+  }
+
+  /* ---------- LEARN: pressure, then winning the puck ---------- */
+  // Built from the corner play (They have the puck) and the matching "We win the puck" play.
+  function pressureReady() {
+    return ["ozLeft", "ozRight", "ozWinLeft", "ozWinRight"].every(function (sid) {
+      var g = groupFor(sid);
+      return ["F1", "F2", "F3", "LD", "RD"].every(function (r) { return !!playFor(g, r); });
+    });
+  }
+  function pressureText(step, corner) {
+    return [
+      "Their team is set up with their defenseman on the puck in the " + corner + " corner. Our team starts at the blue line: three forwards (F) and two defensemen (D).",
+      "F1, the dog, skates in hard at the player with the puck. Take away their time and space.",
+      "F2, the fox, skates in to support F1. Now their defenseman feels two-man pressure.",
+      "F3, the hawk, circles into the open ice between the net and the high slot. F1, F2 and F3 make a triangle around the puck.",
+      "F1 wins the puck! The triangle moves with it. F2 stays close, F3 is open in front, and our defensemen hold the blue line.",
+      "F1 has two pass options: a short pass to F2, or a pass to F3 in the open ice."
+    ][step];
+  }
+  function triangle(layer, spots) {
+    var pts = spots.map(function (q) { return P(q[0], q[1]).join(","); }).join(" ");
+    el("polygon", { points: pts, fill: "rgba(139,196,63,0.35)", stroke: NAVY, "stroke-width": 2.5, "stroke-dasharray": "6 5", "stroke-linejoin": "round" }, layer);
+  }
+  function renderPressure() {
+    var L = learnRink.layer, step = rotStep, left = learnSide === "left";
+    var a = groupFor(left ? "ozLeft" : "ozRight"), w = groupFor(left ? "ozWinLeft" : "ozWinRight");
+    var start = a[0], won = w[0];
+    var spot = function (g, r) { return playFor(g, r).spots[0]; };
+    // our forwards start on the blue line, the one on the puck side going to F1 and the far one to F3
+    var ys = left ? [60, 127, 195] : [195, 127, 60];
+    var from = { F1: [372, ys[0]], F2: [372, ys[1]], F3: [372, ys[2]] };
+    var MOVE = { F1: 1, F2: 2, F3: 3 };
+    clear(L); setZone(learnRink, "oz");
+    if (step < 4) {
+      (start.opp || []).forEach(function (o) { player(L, o[0], o[1], RED, o[2] || "", false); });
+      carrierAndPuck(L, start, false);
+      var f1 = spot(a, "F1"), f2 = spot(a, "F2"), f3 = spot(a, "F3");
+      if (step >= 1) { var u = P(start.puck[0] - 9, start.puck[1]), v = P(f1[0], f1[1]); el("line", { x1: u[0], y1: u[1], x2: v[0], y2: v[1], stroke: NAVY, "stroke-width": 2.6, "stroke-dasharray": "6 4", "stroke-linecap": "round" }, L); }
+      if (step >= 2) { var u2 = P(f1[0], f1[1]), v2 = P(f2[0], f2[1]); el("line", { x1: u2[0], y1: u2[1], x2: v2[0], y2: v2[1], stroke: NAVY, "stroke-width": 2.6, "stroke-dasharray": "6 4", "stroke-linecap": "round" }, L); }
+      if (step >= 3) triangle(L, [f1, f2, f3]);
+      ["LD", "RD"].forEach(function (r) { var o = spot(a, r); player(L, o[0], o[1], LIME, "D", false); });
+      ["F1", "F2", "F3"].forEach(function (r) {
+        var o = from[r], n = spot(a, r);
+        if (step >= MOVE[r]) { ghost(L, o, "F"); arrowTo(L, o, n, "#4F8A12"); }
+      });
+      ["F1", "F2", "F3"].forEach(function (r) {
+        var o = from[r], n = spot(a, r);
+        if (step >= MOVE[r]) player(L, n[0], n[1], LIME, r, step === MOVE[r]);
+        else player(L, o[0], o[1], LIME, "F", false);
+      });
+    } else {
+      (won.opp || []).forEach(function (o) { player(L, o[0], o[1], RED, o[2] || "", false); });
+      carrierAndPuck(L, won, true);
+      var ws = ["F1", "F2", "F3"].map(function (r) { return spot(w, r); });
+      triangle(L, ws);
+      ["F1", "F2", "F3", "LD", "RD"].forEach(function (r) {
+        var o = spot(a, r), n = spot(w, r);
+        ghost(L, o, r === "LD" || r === "RD" ? "D" : r); arrowTo(L, o, n, "#4F8A12");
+      });
+      if (step === 5) { arrowTo(L, spot(w, "F1"), spot(w, "F2"), NAVY); arrowTo(L, spot(w, "F1"), spot(w, "F3"), NAVY); }
+      ["LD", "RD"].forEach(function (r) { var n = spot(w, r); player(L, n[0], n[1], LIME, "D", false); });
+      ["F2", "F3", "F1"].forEach(function (r) { var n = spot(w, r); player(L, n[0], n[1], LIME, r, step === 4 && r === "F1"); });
+    }
+    $("learnCallout").textContent = pressureText(step, left ? "left" : "right");
+    var row = $("roleRow"); row.innerHTML = "";
+    var label = document.createElement("span"); label.className = "row-label"; label.textContent = "Step " + (step + 1) + " of " + (ROT_LAST + 1); row.appendChild(label);
+    addChip(row, "‹ Back", null, function () { if (rotStep > 0) { rotStep--; renderLearn(); } }, false, step === 0 ? "dim" : "");
+    addChip(row, step === ROT_LAST ? "Watch again" : "Next ›", null, function () { rotStep = step === ROT_LAST ? 0 : rotStep + 1; renderLearn(); }, false, "green");
+    var card = $("learnCard"); card.innerHTML = "";
+    var roles = step === 0 ? [] : step <= 3 ? ["F" + step] : step === 4 ? ["F1", "F2", "F3"] : ["F2", "F3"];
+    var gg = step >= 4 ? w : a;
+    if (!roles.length) { var tip0 = document.createElement("div"); tip0.className = "tip"; tip0.style.marginTop = "0"; tip0.textContent = "Tap Next to watch F1, F2 and F3 skate in from the blue line."; card.appendChild(tip0); }
+    roles.forEach(function (r, n) {
+      var item = document.createElement("div"); item.className = "pl focus"; if (n === 0) item.style.marginTop = "0";
+      var tok = document.createElement("span"); tok.className = "tok"; tok.textContent = r; item.appendChild(tok);
+      var body = document.createElement("div");
+      var st = document.createElement("strong"); st.textContent = ROLES[r].short; body.appendChild(st);
+      var pp = document.createElement("p"); pp.textContent = playFor(gg, r).why || ""; body.appendChild(pp);
+      item.appendChild(body); card.appendChild(item);
+    });
+    if (step >= 4) { var tip = document.createElement("div"); tip.className = "tip"; tip.textContent = "Dashed circles show where each player was. Dashed arrows show where they skate."; card.appendChild(tip); }
   }
 
   /* ---------- PLAY ---------- */
