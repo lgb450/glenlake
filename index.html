@@ -331,6 +331,7 @@
         <li>In Our zone, open Set up the house, then tap each player to light up the zone they cover.</li>
         <li>In Their zone, open Win the puck to watch F1 pressure, F2 support, and F3 get open once F1 wins the puck.</li>
         <li>In Their zone, open the Rotation play and tap Next to watch the forwards switch jobs when the puck moves to the other corner.</li>
+        <li>In Our zone, the House button shows the four zones over any play, so you can see who covers what.</li>
         <li>Plays in red are when they have the puck. Plays in green are when we have it.</li>
       </ul>
       <h3>Play</h3>
@@ -915,6 +916,13 @@
     row.appendChild(b);
   }
   var learnKey = null, learnSide = "left", learnOpp = true;
+  // Layers are extra overlays that can be switched on over any play in their zone (an offence layer can be added the same way).
+  var learnLayers = {};
+  var LAYERS = [
+    { id: "house", zone: "dz", label: "House",
+      ready: function () { return !!playFor(groupFor("dzSet"), "LW"); },
+      draw: function (layer) { drawSetup(layer, groupFor("dzSet"), ["LW", "RW", "LD", "RD"]); } }
+  ];
   // One "play" is everything that shares a group and a short name; its left and right versions are separate situations.
   function playsInZone(phase) {
     var out = [], byKey = {}, groups = [];
@@ -1033,6 +1041,9 @@
     addChip(row, "Whole Team", allOn, function () { learnSel = allOn ? [] : roles.slice(); learnPop = null; renderLearn(); }, false, "green");
     var hasOpp = !!(group[0].opp && group[0].opp.length);
     if (hasOpp) addChip(row, "Other Team", learnOpp, function () { learnOpp = !learnOpp; renderLearn(); }, false, "red");
+    if (!(group[0].kind === "setup")) LAYERS.forEach(function (L) {
+      if (L.zone === learnZone && L.ready()) addChip(row, L.label, !!learnLayers[L.id], function () { learnLayers[L.id] = !learnLayers[L.id]; renderLearn(); }, false, "layer");
+    });
     // Clear takes both teams off the ice; only the puck carrier stays
     addChip(row, "Clear", null, function () { learnSel = []; learnOpp = false; learnPop = null; renderLearn(); }, true);
 
@@ -1042,6 +1053,7 @@
     var carrierShown = !!first.carrier && learnSel.indexOf(first.carrier) >= 0;
     if (setup) drawSetup(learnRink.layer, group, learnSel);
     else {
+      LAYERS.forEach(function (L) { if (L.zone === learnZone && learnLayers[L.id] && L.ready()) L.draw(learnRink.layer); });
       carrierAndPuck(learnRink.layer, first, carrierShown);
       if (focus) playFor(group, focus).spots.forEach(function (s) { goodArea(learnRink.layer, s, false); });
     }
