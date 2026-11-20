@@ -254,6 +254,10 @@
   .playname.us .g { color: var(--good); }
   .pl-group.them { color: var(--red); }
   .pl-group.us { color: var(--good); }
+  .chip.layer { border-color: #A8640A; color: #8A5200; }
+  .chip.layer[aria-pressed="true"] { background: #C77D0A; border-color: #C77D0A; color: #051537; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip.layer { border-color: #E39A2A; color: #F4B860; } }
+  :root[data-theme="dark"] .chip.layer { border-color: #E39A2A; color: #F4B860; }
   .chip.green { border-color: var(--good); color: var(--good); }
   .chip.green[aria-pressed="true"] { background: #8BC43F; border-color: #8BC43F; color: #051537; }
 
@@ -922,7 +926,7 @@
   var LAYERS = [
     { id: "house", zone: "dz", label: "House",
       ready: function () { return !!playFor(groupFor("dzSet"), "LW"); },
-      draw: function (layer) { drawSetup(layer, groupFor("dzSet"), ["LW", "RW", "LD", "RD"]); } },
+      draw: function (layer) { drawSetup(layer, groupFor("dzSet"), ["LW", "RW", "LD", "RD"], ZONE_ORANGE); } },
     { id: "scoring", zone: "oz", label: "Scoring",
       ready: function () { return true; },
       draw: function (layer) { drawScoring(layer); } }
@@ -1109,7 +1113,10 @@
       el("text", { x: c[0], y: c[1], "text-anchor": "middle", "font-size": 8.5, "font-weight": 800, fill: "#9A5F05", "font-family": "Nunito Sans, sans-serif", "pointer-events": "none" }, layer).textContent = l[2];
     });
   }
-  function drawSetup(layer, group, sel) {
+  var ZONE_GREEN = { oval: "rgba(139,196,63,0.30)", own: "rgba(139,196,63,0.34)", other: "rgba(139,196,63,0.22)", line: "#4F8A12", text: "#3E7A0E" };
+  var ZONE_ORANGE = { oval: "rgba(199,125,10,0.24)", own: "rgba(199,125,10,0.26)", other: "rgba(199,125,10,0.16)", line: "#C77D0A", text: "#9A5F05" };
+  function drawSetup(layer, group, sel, C) {
+    C = C || ZONE_GREEN;
     var art = el("g", { transform: "matrix(0 -1 1 0 0 600)" }, layer);
     var cp = el("clipPath", { id: "zoneclip" }, art);
     el("rect", { x: 5, y: 5, width: 590, height: 245, rx: 66 }, cp);
@@ -1123,15 +1130,15 @@
         var key = z.join(",");
         if (drawn[key]) return;
         drawn[key] = true;
-        if (z.length === 5) el("ellipse", { cx: z[0], cy: z[1], rx: z[2], ry: z[3], transform: "rotate(" + z[4] + " " + z[0] + " " + z[1] + ")", fill: "rgba(199,125,10,0.24)", stroke: "#C77D0A", "stroke-width": 2 }, zg);
-        else el("rect", { x: z[0], y: z[1], width: z[2] - z[0], height: z[3] - z[1], fill: own ? "rgba(199,125,10,0.26)" : "rgba(199,125,10,0.16)", stroke: "#C77D0A", "stroke-width": own ? 2.2 : 1.6 }, zg);
+        if (z.length === 5) el("ellipse", { cx: z[0], cy: z[1], rx: z[2], ry: z[3], transform: "rotate(" + z[4] + " " + z[0] + " " + z[1] + ")", fill: C.oval, stroke: C.line, "stroke-width": 2 }, zg);
+        else el("rect", { x: z[0], y: z[1], width: z[2] - z[0], height: z[3] - z[1], fill: own ? C.own : C.other, stroke: C.line, "stroke-width": own ? 2.2 : 1.6 }, zg);
         if (own && z.length === 4) labels.push([z[2] > 150 ? z[2] - 16 : z[0] + 18, z[1] < 10 ? z[1] + 57 : z[3] - 57, ROLES[r].letter + " zone"]);
       });
     });
     el("polygon", { points: HOUSE.map(function (p) { return P(p[0], p[1]).join(","); }).join(" "), fill: "none", stroke: "#C77D0A", "stroke-width": 3, "stroke-dasharray": "8 5", "stroke-linejoin": "round" }, layer);
     function label(x, y, t, size, fill) { var c = P(x, y); el("text", { x: c[0], y: c[1], "text-anchor": "middle", "font-size": size, "font-weight": 800, fill: fill, "font-family": "Nunito Sans, sans-serif", "pointer-events": "none" }, layer).textContent = t; }
     label(140, 106, "Danger", 8.5, "#9A5F05"); label(130, 106, "zone", 8.5, "#9A5F05");
-    labels.forEach(function (l) { label(l[0], l[1], l[2], 10.5, "#9A5F05"); });
+    labels.forEach(function (l) { label(l[0], l[1], l[2], 10.5, C.text); });
   }
 
   /* ---------- LEARN: the forecheck rotation ---------- */
