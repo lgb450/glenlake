@@ -187,8 +187,8 @@
   .lbrow .rk { flex: none; width: 2.2em; font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-style: italic; font-size: 1.5rem; color: var(--ink-soft); }
   .lbrow .nm { flex: 1; font-size: 1.3rem; }
   .lbrow .sc { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-style: italic; font-size: 1.6rem; }
-  .lbrow.me { border-color: var(--lime); background: var(--good-bg); color: #051537; }
-  .lbrow.me .rk { color: #051537; }
+  .lbrow.me { border-color: var(--lime); background: var(--good-bg); color: var(--ink); }
+  .lbrow.me .rk { color: var(--ink-soft); }
   .lbnote { text-align: center; font-weight: 700; color: var(--ink-soft); margin: 14px 0 0; }
   #screen-board { text-align: center; }
   .chip.dim { opacity: 0.4; }
@@ -307,17 +307,18 @@
   .chalscore { font-size: 5.2rem; }
   .chalscore small { display: block; font-size: 1.5rem; font-style: normal; color: var(--ink-soft); letter-spacing: .5px; margin-top: 2px; }
   .lbrow .crown { display: inline-flex; vertical-align: -4px; margin-right: 6px; }
-  .lbrow.gold { border-color: #D4A017; background: linear-gradient(90deg, rgba(255,215,64,.28), rgba(255,215,64,.06)); color: #051537; }
-  .lbrow.silver { border-color: #98A5B3; background: linear-gradient(90deg, rgba(192,200,210,.4), rgba(192,200,210,.08)); color: #051537; }
-  .lbrow.bronze { border-color: #B26B2E; background: linear-gradient(90deg, rgba(205,127,50,.3), rgba(205,127,50,.07)); color: #051537; }
-  .lbrow.gold .rk, .lbrow.silver .rk, .lbrow.bronze .rk { color: #051537; }
+  .lbrow.gold { border-color: #D4A017; background: linear-gradient(90deg, rgba(255,201,40,.30), rgba(255,201,40,.06)); color: var(--ink); }
+  .lbrow.silver { border-color: #98A5B3; background: linear-gradient(90deg, rgba(170,184,200,.34), rgba(170,184,200,.07)); color: var(--ink); }
+  .lbrow.bronze { border-color: #B26B2E; background: linear-gradient(90deg, rgba(205,127,50,.32), rgba(205,127,50,.07)); color: var(--ink); }
+  .lbrow.gold .rk, .lbrow.silver .rk, .lbrow.bronze .rk { color: var(--ink); }
   .lbrow.gold .crown { color: #FFC928; } .lbrow.silver .crown { color: #C9D1DA; } .lbrow.bronze .crown { color: #CD7F32; }
 
   .lbrow .nm { text-align: left; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; }
   .lbrow .tm { font-size: .95rem; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
   .lbrow .tag { font-size: .72rem; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; padding: 1px 7px; border-radius: 99px; border: 1.5px solid var(--line); color: var(--ink-soft); }
   .lbrow .tag.parent { border-color: #7B5EA7; color: #5E4690; }
-  .lbrow.gold .tm, .lbrow.silver .tm, .lbrow.bronze .tm, .lbrow.me .tm { color: #3B4B63; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lbrow .tag.parent { border-color: #A98BE0; color: #D2BFFA; } }
+  :root[data-theme="dark"] .lbrow .tag.parent { border-color: #A98BE0; color: #D2BFFA; }
 </style>
 </head>
 <body>
