@@ -333,6 +333,7 @@
         <li>Tap a player to see where they go and why. Tap more players to add them.</li>
         <li>Whole Team shows or hides all of your players. Other Team does the same for the other team. Clear takes everyone off the ice except the puck carrier.</li>
         <li>In Our zone, open Set up the house, then tap each player to light up the zone they cover.</li>
+        <li>In Our zone, open Breakout play and tap Next to follow the breakout one step at a time, out of our zone and into the neutral zone.</li>
         <li>In Their zone, open Win the puck to watch F1 pressure, F2 support, and F3 get open once F1 wins the puck.</li>
         <li>In Their zone, open the Rotation play and tap Next to watch the forwards switch jobs when the puck moves to the other corner.</li>
         <li>In Our zone, the House button shows the four zones over any play, so you can see who covers what.</li>
@@ -600,7 +601,7 @@
   }
   // Plays are stored on the flat ice (x runs toward their net, y runs from our left side to our right side).
   // On screen the ice is turned: we attack up, and the screen shows one zone at a time.
-  var VIEWBOX = { dz: "0 342 255 258", oz: "0 0 255 258" };
+  var VIEWBOX = { dz: "0 342 255 258", oz: "0 0 255 258", out: "0 215 255 385" };
   function P(x, y) { return [y, 600 - x]; }
   function setZone(rink, phase) { rink.svg.setAttribute("viewBox", VIEWBOX[phase] || VIEWBOX.dz); }
   function buildRink(container, label, extraClass) {
@@ -745,7 +746,7 @@
     { k: "dzBrkLeft", phase: "dz", group: "We have the puck", short: "Breakout", side: "left", puckLabel: "", has: "us", puck: [21, 28], disc: [27, 31], carrier: "LD", title: "We have the puck in our left corner",
       text: "Our left defenseman has the puck in our left corner and is about to start the breakout.",
       opp: [[41, 68, "F"], [123, 59, "F"], [90, 127, "F"], [193, 31, "D"], [223, 194, "D"]],
-      roles: [["C", [65, 103, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
+      roles: [["C", [65, 103, 45], "Come low to support your defenseman in case of a turnover, then build speed toward the boards to exit the zone. Be a passing option from your winger. Do not take a pass in front of our net. We stay out of the danger zone with passes."],
               ["LW", [93, 15, 25], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
               ["RW", [170, 193, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
               ["LD", [23, 48, 30], "You have the puck. Protect it with your body, then look up for the outlet pass on the boards or up the middle."],
@@ -753,7 +754,7 @@
     { k: "dzBrkRight", phase: "dz", group: "We have the puck", short: "Breakout", side: "right", puckLabel: "", has: "us", puck: [18, 220], disc: [24, 223], carrier: "RD", title: "We have the puck in our right corner",
       text: "Our right defenseman has the puck in our right corner and is about to start the breakout.",
       opp: [[41, 185, "F"], [120, 194, "F"], [87, 115, "F"], [230, 195, "D"], [230, 65, "D"]],
-      roles: [["C", [63, 163, 45], "Come low through the middle so your defenseman has a short pass in the middle."],
+      roles: [["C", [63, 163, 45], "Come low to support your defenseman in case of a turnover, then build speed toward the boards to exit the zone. Be a passing option from your winger. Do not take a pass in front of our net. We stay out of the danger zone with passes."],
               ["LW", [183, 69, 36], "Stay near the boards on your side, ready for a pass or to help along the wall."],
               ["RW", [95, 237, 25], "Get to the boards on your side below the blue line with your stick down, ready for the breakout pass."],
               ["LD", [71, 121, 36], "Get low on your side and show your stick so your partner has a short pass."],
@@ -805,7 +806,47 @@
               ["F2", [465, 171, 34], "Stay close to F1 as a short option. If F1 passes to the hawk, move toward the net for a rebound."],
               ["F3", [533, 129, 46], "You are the hawk. Get open between the front of the net and the high slot and call for the pass."],
               ["LD", [388, 103, 34], "Slide toward the middle. Be ready for a shot from the point, or to get back if the puck turns over."],
-              ["RD", [388, 215, 30], "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point."]]}
+              ["RD", [388, 215, 30], "Hold the blue line on the puck side so the puck stays in the zone. Be ready for a pass back to the point."]]},
+    { k: "dzOutR1", phase: "dz", kind: "breakout", group: "Breakout lesson", short: "1 Get set", side: "right", puckLabel: "", has: "us", puck: [22, 207], disc: [30, 214], carrier: "RD", title: "Breakout, step 1",
+      text: "Our right defenseman has the puck in the right corner. Everyone gets set for the breakout.",
+      opp: [[41, 185, "F"], [120, 194, "F"], [87, 115, "F"], [230, 195, "D"], [230, 65, "D"]],
+      roles: [["C", [63, 163, 12], "Stay low and slow. Time the pass from your defenseman so you can build speed as it happens."],
+              ["LW", [183, 75, 12], "Cheat slightly toward the middle, but stay in your lane. You are not leaving the zone yet."],
+              ["RW", [95, 237, 12], "Get low on the boards with your stick on the ice, ready for the pass from your defenseman."],
+              ["LD", [71, 121, 12], "Hold the front of the net and stay between the other team and our net."],
+              ["RD", [22, 207, 12], "You have the puck. Look up and get ready to pass it right onto your winger's stick."]]},
+    { k: "dzOutR2", phase: "dz", kind: "breakout", group: "Breakout lesson", short: "2 Pass to RW", side: "right", puckLabel: "", has: "us", puck: [95, 237], disc: [101, 244], carrier: "RW", title: "Breakout, step 2",
+      text: "RD passes right onto the stick of RW along the boards. We never pass through the danger zone. C starts to move up the ice.",
+      opp: [[55, 200, "F"], [125, 200, "F"], [90, 118, "F"], [206, 224, "D"], [230, 65, "D"]],
+      roles: [["C", [130, 174, 12], "Start moving up the ice as the pass is made. Be even with RW or just a little higher."],
+              ["LW", [183, 75, 12], "Stay in your lane and keep your stick on the ice."],
+              ["RW", [95, 237, 12], "Take the pass on your stick and start moving your feet right away."],
+              ["LD", [71, 121, 12], "Hold the front of the net until the puck is out of the corner."],
+              ["RD", [22, 207, 12], "Make the pass right on the stick, along the boards. Then follow the play."]]},
+    { k: "dzOutR3", phase: "dz", kind: "breakout", group: "Breakout lesson", short: "3 RW moves", side: "right", puckLabel: "", has: "us", puck: [179, 238], disc: [178, 241], carrier: "RW", title: "Breakout, step 3",
+      text: "RW moves his feet right away, about halfway between the top of the circle and the blue line. He can skate it, or pass to C, who is near the blue line.",
+      opp: [[108, 225, "F"], [158, 198, "F"], [110, 120, "F"], [211, 230, "D"], [230, 65, "D"]],
+      roles: [["C", [209, 183, 12], "Be near the blue line with speed, ready for a pass from RW."],
+              ["LW", [183, 75, 12], "Keep your lane through the neutral zone. Stay ready for a pass."],
+              ["RW", [167, 238, 12], "Keep your feet moving. You can skate with the puck, or pass to C. If nothing is open, pass to LW as a last resort."],
+              ["LD", [90, 121, 12], "Start to follow the play up the ice. Do not get caught standing still in our zone."],
+              ["RD", [85, 196, 12], "Follow the play. Stay high enough to support, but do not pinch too much in case of a turnover."]]},
+    { k: "dzOutR4", phase: "dz", kind: "breakout", group: "Breakout lesson", short: "4 Pass to C", side: "right", puckLabel: "", has: "us", puck: [214, 185], disc: [230, 196], carrier: "C", title: "Breakout, step 4",
+      text: "RW passes to C near the blue line. The other team's defenseman is probably along the boards, trying to keep the puck in. LW starts up his lane at the same time.",
+      opp: [[120, 215, "F"], [175, 205, "F"], [140, 120, "F"], [238, 228, "D"], [230, 65, "D"]],
+      roles: [["C", [224, 190, 12], "Take the pass near the blue line, with speed, and keep moving up the ice."],
+              ["LW", [225, 88, 12], "Start moving up your lane, cheating a little toward the middle. Stay ready for a pass."],
+              ["RW", [201, 238, 12], "After you pass, keep skating up the boards. Do not stop."],
+              ["LD", [110, 121, 12], "Follow up the ice, high enough to support."],
+              ["RD", [70, 198, 12], "Follow up the ice. Do not pinch too much."]]},
+    { k: "dzOutR5", phase: "dz", kind: "breakout", group: "Breakout lesson", short: "5 Out of the zone", side: "right", puckLabel: "", has: "us", puck: [320, 185], disc: [335, 208], carrier: "C", title: "Breakout, step 5",
+      text: "RW moves into the middle lane. C leads the rush, ahead of LW. LD and RD follow up the ice, high enough to support but not pinching.",
+      opp: [[256, 191, "F"], [270, 135, "F"], [250, 80, "F"], [344, 73, "D"], [345, 165, "D"]],
+      roles: [["C", [327, 198, 12], "Lead the rush with the puck, ahead of LW. Look up for your wingers."],
+              ["LW", [308, 59, 12], "Stay in your lane, a little behind C, ready for a pass."],
+              ["RW", [290, 128, 12], "Move into the middle lane to give C another passing option."],
+              ["LD", [217, 70, 12], "Follow up to the blue line. Support the play, but do not pinch."],
+              ["RD", [219, 193, 12], "Follow up to the blue line. Support the play, but do not pinch."]]}
   ];
   function defaults() {
     var out = [];
@@ -942,7 +983,7 @@
   // One "play" is everything that shares a group and a short name; its left and right versions are separate situations.
   function playsInZone(phase) {
     var out = [], byKey = {}, groups = [];
-    sorted(PLAYS.filter(function (p) { return p.phase === phase; })).forEach(function (p) {
+    sorted(PLAYS.filter(function (p) { return p.phase === phase && p.kind !== "breakout"; })).forEach(function (p) {
       var key = p.group + "|" + p.short;
       var e = byKey[key];
       if (!e) { e = byKey[key] = { key: key, group: p.group, short: p.short, has: p.has, left: null, right: null, one: null }; out.push(e); }
@@ -953,6 +994,7 @@
     // the rotation lesson is built from the two corner plays, so it only shows when both exist
     if (phase === "oz" && rotationReady()) out.push({ key: "rotation|switch", group: "They have the puck", short: "Rotation", has: "them", left: "ozLeft", right: "ozRight", one: null, special: "rotation" });
     if (phase === "oz" && pressureReady()) out.push({ key: "rotation|pressure", group: "They have the puck", short: "Win the puck", has: "them", left: "ozLeft", right: "ozRight", one: null, special: "pressure" });
+    if (phase === "dz" && breakoutReady()) out.push({ key: "breakout|steps", group: "We have the puck", short: "Breakout play", has: "us", left: "dzOutR1", right: "dzOutR1", one: null, special: "breakout" });
     // keep plays of the same group together, in the order the groups first appear
     return out.map(function (e, i) { return { e: e, i: i }; }).sort(function (a, b) {
       return (groups.indexOf(a.e.group) - groups.indexOf(b.e.group)) || (a.i - b.i);
@@ -1023,7 +1065,7 @@
       $("sideSeg").hidden = false;
       $("sideLeft").setAttribute("aria-pressed", String(learnSide === "left"));
       $("sideRight").setAttribute("aria-pressed", String(learnSide === "right"));
-      if (entry.special === "pressure") renderPressure(); else renderRotation();
+      if (entry.special === "pressure") renderPressure(); else if (entry.special === "breakout") renderBreakout(); else renderRotation();
       return;
     }
     rotStep = 0; rotKey = null;
@@ -1248,6 +1290,64 @@
     card.appendChild(tip);
   }
 
+  /* ---------- LEARN: the breakout (stage by stage) ---------- */
+  // Six stages are stored as ordinary situations (dzOutR1 to dzOutR5) so Coach mode can move everyone. They are the right-side breakout; the left side is a mirror image.
+  var BO_LAST = 4, BO_SWAP = { C: "C", LW: "RW", RW: "LW", LD: "RD", RD: "LD" };
+  var BO_PASS = { 1: ["RD", "RW"], 3: ["RW", "C"] };   // step index -> [from, to] (right-side names)
+  function breakoutReady() {
+    for (var i = 1; i <= 5; i++) {
+      var g = groupFor("dzOutR" + i);
+      if (!["C", "LW", "RW", "LD", "RD"].every(function (r) { return !!playFor(g, r); })) return false;
+    }
+    return true;
+  }
+  function boStage(i, left) {
+    var g = groupFor("dzOutR" + i), pos = {}, why = {}, d = discOf(g[0]);
+    ["C", "LW", "RW", "LD", "RD"].forEach(function (r) {
+      var q = playFor(g, left ? BO_SWAP[r] : r), s = q.spots[0];
+      pos[r] = left ? [s[0], 255 - s[1]] : [s[0], s[1]]; why[r] = q.why;
+    });
+    return { text: g[0].text, pos: pos, why: why, disc: left ? [d[0], 255 - d[1]] : [d[0], d[1]],
+      opp: (g[0].opp || []).map(function (o) { return left ? [o[0], 255 - o[1], o[2] || ""] : [o[0], o[1], o[2] || ""]; }) };
+  }
+  function renderBreakout() {
+    var L = learnRink.layer, step = rotStep, left = learnSide === "left";
+    setZone(learnRink, "out");
+    var cur = boStage(step + 1, left), prev = step > 0 ? boStage(step, left) : null, next = step < BO_LAST ? boStage(step + 2, left) : null;
+    var sw = function (r) { return left ? BO_SWAP[r] : r; };
+    cur.opp.forEach(function (o) { player(L, o[0], o[1], RED, o[2], false); });
+    if (step === 2 && next) {   // the choices for the player with the puck: skate it, or pass to C
+      arrowTo(L, cur.pos[sw("RW")], next.pos[sw("RW")], "#C77D0A");
+      arrowTo(L, cur.pos[sw("RW")], cur.pos[sw("C")], "#C77D0A");
+    }
+    var moved = {};
+    ["C", "LW", "RW", "LD", "RD"].forEach(function (r) {
+      if (!prev) return;
+      var o = prev.pos[r], n = cur.pos[r];
+      if (Math.sqrt(Math.pow(o[0] - n[0], 2) + Math.pow(o[1] - n[1], 2)) > 12) { moved[r] = true; ghost(L, o, ROLES[r].letter); arrowTo(L, o, n, "#4F8A12"); }
+    });
+    if (prev && BO_PASS[step]) arrowTo(L, prev.pos[sw(BO_PASS[step][0])], cur.pos[sw(BO_PASS[step][1])], NAVY);
+    ["C", "LW", "RW", "LD", "RD"].forEach(function (r) { player(L, cur.pos[r][0], cur.pos[r][1], LIME, ROLES[r].letter, !!moved[r]); });
+    puckDot(L, cur.disc[0], cur.disc[1]);
+    $("learnCallout").textContent = cur.text;
+    var row = $("roleRow"); row.innerHTML = "";
+    var label = document.createElement("span"); label.className = "row-label"; label.textContent = "Step " + (step + 1) + " of " + (BO_LAST + 1); row.appendChild(label);
+    addChip(row, "‹ Back", null, function () { if (rotStep > 0) { rotStep--; renderLearn(); } }, false, step === 0 ? "dim" : "");
+    addChip(row, step === BO_LAST ? "Watch again" : "Next ›", null, function () { rotStep = step === BO_LAST ? 0 : rotStep + 1; renderLearn(); }, false, "green");
+    var card = $("learnCard"); card.innerHTML = "";
+    ["C", "LW", "RW", "LD", "RD"].forEach(function (r, n) {
+      var item = document.createElement("div"); item.className = "pl" + (moved[r] ? " focus" : ""); if (n === 0) item.style.marginTop = "0";
+      var tok = document.createElement("span"); tok.className = "tok"; tok.textContent = ROLES[r].letter; item.appendChild(tok);
+      var body = document.createElement("div");
+      var st = document.createElement("strong"); st.textContent = ROLES[r].short; body.appendChild(st);
+      var pp = document.createElement("p"); pp.textContent = cur.why[r] || ""; body.appendChild(pp);
+      item.appendChild(body); card.appendChild(item);
+    });
+    var tip = document.createElement("div"); tip.className = "tip";
+    tip.textContent = "Dashed circles show where each player was. Green dashed arrows show where they skate. The dark arrow is the pass. Gold arrows are the choices for the player with the puck.";
+    card.appendChild(tip);
+  }
+
   /* ---------- LEARN: pressure, then winning the puck ---------- */
   // Built from the corner play (They have the puck) and the matching "We win the puck" play.
   function pressureReady() {
@@ -1337,11 +1437,11 @@
   var order = [], idx = 0, pts = 0, streak = 0, bestStreak = 0, right = 0, answered = false;
 
   function inArea(p) { return p.phase === area; }
-  function filtered() { return PLAYS.filter(function (p) { return inArea(p) && p.kind !== "setup" && p.carrier !== p.role && (posFilter === "any" || p.role === posFilter); }); }
+  function filtered() { return PLAYS.filter(function (p) { return inArea(p) && !p.kind && p.carrier !== p.role && (posFilter === "any" || p.role === posFilter); }); }
   function renderStart() {
     var areas = [{ key: "dz", label: "Our zone" }, { key: "oz", label: "Their zone" }];
     chipRow($("areaRow"), "Pick a zone", areas, area, function (k) { area = k; renderStart(); });
-    var present = ROLES_BY_PHASE[area].filter(function (r) { return PLAYS.some(function (p) { return inArea(p) && p.carrier !== p.role && p.role === r; }); });
+    var present = ROLES_BY_PHASE[area].filter(function (r) { return PLAYS.some(function (p) { return inArea(p) && !p.kind && p.carrier !== p.role && p.role === r; }); });
     if (posFilter !== "any" && present.indexOf(posFilter) < 0) posFilter = "any";
     var items = [{ key: "any", label: "Any position" }].concat(present.map(function (r) { return { key: r, label: ROLES[r].short }; }));
     chipRow($("posRow"), "Pick a position", items, posFilter, function (k) { posFilter = k; renderStart(); });
@@ -1571,8 +1671,8 @@
   function firstSid() { var ids = situationIds("dz").concat(situationIds("oz")); return ids.length ? ids[0] : null; }
   function changed() { persist(); $("cExport").value = serialize(); refreshBanner(); refreshPubStatus(); }
   function clampX(v) {
-    var g = curGroup(), oz = g.length && g[0].phase === "oz";
-    return Math.round(Math.max(oz ? 350 : 14, Math.min(oz ? 586 : 244, v)));
+    var g = curGroup(), oz = g.length && g[0].phase === "oz", out = g.length && g[0].kind === "breakout";
+    return Math.round(Math.max(oz ? 350 : 14, Math.min(oz ? 586 : out ? 380 : 244, v)));
   }
   function clampY(v) { return Math.round(Math.max(14, Math.min(241, v))); }
 
@@ -1635,7 +1735,7 @@
     clear(layer);
     var g = curGroup();
     if (!g.length) return;
-    setZone(coachRink, g[0].phase);
+    setZone(coachRink, g[0].kind === "breakout" ? "out" : g[0].phase);
     var first = g[0];
     if (first.kind !== "setup") {
       var pg = carrierAndPuck(layer, first, !!first.carrier && !!playFor(g, first.carrier), true);
