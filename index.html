@@ -303,6 +303,15 @@
   .rink-wrap.shake { animation: fxShake .35s; }
   @keyframes fxShake { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
   @media (prefers-reduced-motion: reduce) { #fx .puck, #fx .wash { display: none; } #fx .light, #fx .word { animation-duration: 1.4s; } .rink-wrap.shake { animation: none; } }
+
+  .chalscore { font-size: 5.2rem; }
+  .chalscore small { display: block; font-size: 1.5rem; font-style: normal; color: var(--ink-soft); letter-spacing: .5px; margin-top: 2px; }
+  .lbrow .crown { display: inline-flex; vertical-align: -4px; margin-right: 6px; }
+  .lbrow.gold { border-color: #D4A017; background: linear-gradient(90deg, rgba(255,215,64,.28), rgba(255,215,64,.06)); color: #051537; }
+  .lbrow.silver { border-color: #98A5B3; background: linear-gradient(90deg, rgba(192,200,210,.4), rgba(192,200,210,.08)); color: #051537; }
+  .lbrow.bronze { border-color: #B26B2E; background: linear-gradient(90deg, rgba(205,127,50,.3), rgba(205,127,50,.07)); color: #051537; }
+  .lbrow.gold .rk, .lbrow.silver .rk, .lbrow.bronze .rk { color: #051537; }
+  .lbrow.gold .crown { color: #FFC928; } .lbrow.silver .crown { color: #C9D1DA; } .lbrow.bronze .crown { color: #CD7F32; }
 </style>
 </head>
 <body>
@@ -332,7 +341,7 @@
     <div class="home-actions">
       <button class="home-btn go" id="homeLearn" type="button"><span class="t">Learn</span><span class="s">Learn your positions</span></button>
       <button class="home-btn alt" id="homePlay" type="button"><span class="t">Play</span><span class="s">Test your knowledge</span></button>
-      <button class="home-btn chal" id="homeChal" type="button"><span class="t">Challenge</span><span class="s">10 plays. Same for everyone. Get on the leaderboard!</span></button>
+      <button class="home-btn chal" id="homeChal" type="button"><span class="t">Challenge</span><span class="s">12 plays. Same for everyone. Get on the leaderboard!</span></button>
     </div>
     <div class="homelinks">
       <button class="btn small ghost" id="homeHow" type="button">How to Play</button>
@@ -363,11 +372,11 @@
       <ul>
         <li>Pick a zone and a position, then tap the spot on the ice where your player should go.</li>
         <li>After you answer, you’ll see where everyone goes.</li>
-        <li>Earn points for every good spot. Keep a streak going for bonus points!</li>
+        <li>Earn points for every good spot. In the Challenge, every right answer in a row is worth more points!</li>
       </ul>
       <h3>Challenge</h3>
       <ul>
-        <li>Everyone gets the same 10 plays, in the same order, so scores are fair.</li>
+        <li>Everyone gets the same 12 plays, in the same order, so scores are fair.</li>
         <li>Add your jersey number on the home screen to post your best score to the team leaderboard. Only your best score counts, so try again to beat it!</li>
         <li>Play is for practice and does not go on the leaderboard.</li>
       </ul>
@@ -442,7 +451,7 @@
 
     <div id="chalStart" class="card" hidden style="margin-top:0">
       <h2>The Challenge</h2>
-      <p>10 plays from both zones. Everyone gets the same plays in the same order. The best score possible is <b id="chalMax"></b>.</p>
+      <p>12 plays from both zones. Everyone gets the same plays in the same order. Every right answer in a row is worth more, so keep your streak alive! The best score possible is <b id="chalMax"></b>.</p>
       <p class="muted" id="chalWho"></p>
       <button class="btn" id="chalGo">Start the Challenge</button>
       <button class="btn ghost" id="chalBoard">See the leaderboard</button>
@@ -1609,6 +1618,7 @@
     answered = true;
     var hit = who === p.role, gain = 0;
     if (hit) { gain = 10; streak++; right++; if (streak >= 3) gain += 2; } else streak = 0;
+    if (gameMode === "challenge") gain = chalGain(hit ? "good" : "miss", streak);
     if (streak > bestStreak) bestStreak = streak;
     pts += gain;
     if (hit) fxGoal(streak >= 3 ? "HOT STREAK!" : "GOAL!"); else fxShake();
@@ -1633,6 +1643,7 @@
     if (best <= 1) { verdict = "good"; gain = 10; streak++; right++; if (streak >= 3) gain += 2; }
     else if (best <= 1.8) { verdict = "close"; gain = 5; streak = 0; }
     else { verdict = "miss"; streak = 0; }
+    if (gameMode === "challenge") gain = chalGain(verdict, streak);
     if (streak > bestStreak) bestStreak = streak;
     pts += gain;
     if (verdict === "good") fxGoal(streak >= 3 ? "HOT STREAK!" : "GOAL!"); else if (verdict === "close") fxShoot(true); else fxShake();
@@ -1649,7 +1660,8 @@
     $("hudPts").textContent = pts;
     $("hudStreak").textContent = streak;
     var head = verdict === "good" ? "Great spot! +" + gain : verdict === "close" ? "Close! +" + gain : "Not quite. +0";
-    if (verdict === "good" && streak >= 3) head += " Streak bonus!";
+    if (verdict === "good" && streak >= 2 && gameMode === "challenge") head += " " + streak + " in a row!";
+    else if (verdict === "good" && streak >= 3) head += " Streak bonus!";
     var fb = $("feedback");
     fb.innerHTML = "";
     var box = document.createElement("div"); box.className = "feedback " + verdict;
@@ -1695,15 +1707,18 @@
   // Paste the Google Apps Script web-app URL between the quotes to turn the team leaderboard on.
   var BOARD_URL = "https://script.google.com/macros/s/AKfycbxB6UKFE1SAMtiJLPwTS8PmM09HjLD5MpBMOMB1xQNxZAuiE3RN02pO56p5NggPQkLx_g/exec";
   var LS_BEST = "glenlake-hawks-chal-best", LS_PENDING = "glenlake-hawks-chal-pending";
-  // The same 10 plays, in this order, for everyone. Zones alternate.
-  var CHALLENGE_IDS = ["dzLeft-LW", "ozLeft-F1", "dzBrkRight-C", "ozRight-F3", "dzPtLeft-RD", "ozWinLeft-F2", "dzRight-LD", "ozRight-F2", "dzBrkLeft-RW", "ozWinRight-F3"];
+  // The same 12 plays, in this order, for everyone. Zones alternate.
+  var CHALLENGE_IDS = ["dzLeft-LW", "ozLeft-F1", "dzBrkRight-C", "ozRight-F3", "dzPtLeft-RD", "ozWinLeft-F2", "dzRight-LD", "ozRight-F2", "dzBrkLeft-RW", "ozWinRight-F3", "dzPtRight-LW", "ozLeft-F3"];
   function challengePlays() {
     var out = [];
     CHALLENGE_IDS.forEach(function (id) { for (var i = 0; i < PLAYS.length; i++) if (PLAYS[i].id === id) { out.push(PLAYS[i]); break; } });
     return out;
   }
-  // 10 points a play, plus 2 for every play from the third right answer in a row on.
-  function challengeMax(n) { return n * 10 + Math.max(0, n - 2) * 2; }
+  // Challenge points: 40 for a right answer, plus 10 more for each right answer in a row, up to 100 a play. 20 for a close one. 10 bonus for a perfect Challenge.
+  var PERFECT_BONUS = 10;
+  function chalGain(verdict, streakNow) { return verdict === "good" ? Math.min(100, 40 + 10 * (streakNow - 1)) : verdict === "close" ? 20 : 0; }
+  function challengeMax(n) { var t = PERFECT_BONUS; for (var k = 1; k <= n; k++) t += chalGain("good", k); return t; }
+  function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
   function myNumber() { return (lsGet(LS.number) || "").replace(/\D/g, "").slice(0, 3); }
   function boardOn() { return !!BOARD_URL; }
   function api(params, cb) {
@@ -1725,7 +1740,7 @@
   function showChalStart() {
     var plays = challengePlays();
     $("playStart").hidden = true; $("playGame").hidden = true; $("playEnd").hidden = true; $("chalStart").hidden = false;
-    $("chalMax").textContent = challengeMax(plays.length);
+    $("chalMax").textContent = fmt(challengeMax(plays.length));
     var n = myNumber();
     $("chalWho").textContent = n ? "Posting as #" + n + "." + (lsGet(LS_BEST) ? " Your best so far: " + lsGet(LS_BEST) + "." : "") : "No jersey number yet. You can play, but your score will not go on the leaderboard. Add it on the home screen.";
     $("chalGo").disabled = !plays.length;
@@ -1741,13 +1756,26 @@
   }
   $("chalGo").addEventListener("click", startChallenge);
   $("chalBoard").addEventListener("click", function () { showScreen("board"); });
+  function countUp(node, target, suffix) {
+    node.className = "big chalscore";
+    var t0 = null, reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function set(v) { node.innerHTML = ""; node.appendChild(document.createTextNode(fmt(v))); var sm = document.createElement("small"); sm.textContent = suffix; node.appendChild(sm); }
+    if (reduce || !window.requestAnimationFrame) { set(target); return; }
+    set(0);
+    function step(t) { if (t0 === null) t0 = t; var f = Math.min(1, (t - t0) / 1400); set(Math.round(target * (1 - Math.pow(1 - f, 3)))); if (f < 1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
   function endChallenge() {
     var n = myNumber(), max = challengeMax(order.length);
-    $("endTitle").textContent = pts >= max ? "Perfect Challenge!" : pts >= max * 0.75 ? "Great Challenge!" : "Challenge done!";
-    $("endScore").textContent = pts + " / " + max;
+    var perfect = right === order.length;
+    if (perfect) pts += PERFECT_BONUS;
+    $("endTitle").textContent = perfect ? "Perfect Challenge!" : pts >= max * 0.75 ? "Great Challenge!" : "Challenge done!";
+    countUp($("endScore"), pts, " / " + fmt(max));
+    if (perfect) setTimeout(function () { fxGoal("PERFECT!"); }, 300); else if (pts >= max * 0.5) setTimeout(function () { fxGoal("NICE!"); }, 300);
     $("endText").textContent = "You got " + right + " of " + order.length + " plays right.";
     var b = $("endBadges"); b.innerHTML = "";
     if (bestStreak >= 3) { var s = document.createElement("span"); s.className = "badge"; s.textContent = "Hot streak: " + bestStreak + " in a row"; b.appendChild(s); }
+    if (perfect) { var s2 = document.createElement("span"); s2.className = "badge"; s2.textContent = "Perfect bonus +" + PERFECT_BONUS; b.appendChild(s2); }
     var prev = parseInt(lsGet(LS_BEST) || "0", 10), rk = $("endRank");
     rk.hidden = false;
     if (!n) { rk.textContent = "Add your jersey number on the home screen to post your score next time."; }
@@ -1771,6 +1799,7 @@
     $("playGame").hidden = true; $("playEnd").hidden = false;
     $("againBtn").focus({ preventScroll: true });
   }
+  var CROWN = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 18 2 7l5.5 4.5L12 4l4.5 7.5L22 7l-1 11z" fill="currentColor" stroke="#051537" stroke-width="1.4" stroke-linejoin="round"/><rect x="3" y="19.2" width="18" height="2.4" rx="1" fill="currentColor" stroke="#051537" stroke-width="1.2"/></svg>';
   function renderBoard() {
     var list = $("lbList"), note = $("lbNote"), n = myNumber();
     list.innerHTML = ""; note.textContent = "";
@@ -1783,8 +1812,13 @@
         var top = j.top || [];
         if (!top.length) { note.textContent = "No scores yet. Be the first!"; return; }
         function row(rank, num, score, me) {
-          var r = document.createElement("div"); r.className = "lbrow" + (me ? " me" : "");
-          [["rk", "#" + rank], ["nm", "#" + num], ["sc", String(score)]].forEach(function (x) { var s = document.createElement("span"); s.className = x[0]; s.textContent = x[1]; r.appendChild(s); });
+          var medal = rank === 1 ? "gold" : rank === 2 ? "silver" : rank === 3 ? "bronze" : "";
+          var r = document.createElement("div"); r.className = "lbrow" + (me ? " me" : "") + (medal ? " " + medal : "");
+          [["rk", "#" + rank], ["nm", "#" + num], ["sc", fmt(score)]].forEach(function (x) {
+            var s = document.createElement("span"); s.className = x[0]; s.textContent = x[1];
+            if (x[0] === "sc" && medal) { var c = document.createElement("span"); c.className = "crown"; c.innerHTML = CROWN; s.insertBefore(c, s.firstChild); }
+            r.appendChild(s);
+          });
           list.appendChild(r);
         }
         var inTop = false;
