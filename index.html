@@ -326,6 +326,7 @@
         <li>Choose Our zone or Their zone, and Left or Right.</li>
         <li>Tap a player to see where they go and why. Tap more players to add them.</li>
         <li>Whole Team shows or hides all of your players. Other Team does the same for the other team. Clear takes everyone off the ice except the puck carrier.</li>
+        <li>In Our zone, open Set up the house, then tap each player to light up the zone they cover.</li>
         <li>In Their zone, open Win the puck to watch F1 pressure, F2 support, and F3 get open once F1 wins the puck.</li>
         <li>In Their zone, open the Rotation play and tap Next to watch the forwards switch jobs when the puck moves to the other corner.</li>
         <li>Plays in red are when they have the puck. Plays in green are when we have it.</li>
@@ -702,6 +703,14 @@
   // Starting plays (Coach mode settings). Left means the top of the flat ice and right means the bottom, the way a player sees it facing the other team’s net.
   // "carrier" is the Glenlake position that has the puck, when it is one of our players.
   var SETS = [
+    { k: "dzSet", phase: "dz", kind: "setup", group: "Our zone setup", short: "Set up the house", side: "", puckLabel: "", has: "us", puck: [93, 127], title: "Set up the house",
+      text: "Five players protect the danger zone. The wings and defensemen each cover a zone, and the center floats to help in either corner or out front. Tap a player to see their zone.",
+      opp: [],
+      roles: [["C", [93, 127, 12], "You are the middle of the house. Float to help in either corner when needed, or stay out front to protect the danger zone. Keep your stick on the ice.", [[62, 88, 58, 30, 50], [62, 167, 58, 30, -50]]],
+              ["LW", [152, 75, 12], "You cover the top left zone and your defenseman. Stay close to the danger zone so you can help low, get to the boards for a breakout, or step up to take away their shot and pass. Stay between the other team and our net, with your stick on the ice.", [[96, 5, 222, 124.5]]],
+              ["RW", [152, 180, 12], "You cover the top right zone and your defenseman. Stay close to the danger zone so you can help low, get to the boards for a breakout, or step up to take away their shot and pass. Stay between the other team and our net, with your stick on the ice.", [[96, 130.5, 222, 250]]],
+              ["LD", [68, 70, 12], "You cover the bottom left zone, including the corner behind the net. Protect the front of the net and stay between the other team and our net. Keep your stick on the ice.", [[1, 5, 90, 124.5]]],
+              ["RD", [68, 185, 12], "You cover the bottom right zone, including the corner behind the net. Protect the front of the net and stay between the other team and our net. Keep your stick on the ice.", [[1, 130.5, 90, 250]]]] },
     { k: "dzLeft", phase: "dz", group: "They have the puck", short: "In the corner", side: "left", puckLabel: "F", has: "them", puck: [46, 34], title: "They have the puck in our left corner",
       text: "The other team has the puck in our left corner.",
       opp: [[85, 126, "F"], [152, 93, "F"], [211, 61, "D"], [215, 175, "D"]],
@@ -788,7 +797,7 @@
     SETS.forEach(function (s) {
       s.roles.forEach(function (r) {
         out.push({ id: s.k + "-" + r[0], sid: s.k, role: r[0], phase: s.phase, has: s.has,
-          puck: s.puck.slice(), opp: (s.opp || []).map(function (o) { return o.slice(); }), carrier: s.carrier || "", spots: [r[1].slice()], group: s.group, short: s.short, side: s.side || "", puckLabel: s.puckLabel || "", title: s.title, text: s.text, why: r[2] });
+          puck: s.puck.slice(), opp: (s.opp || []).map(function (o) { return o.slice(); }), carrier: s.carrier || "", spots: [r[1].slice()], group: s.group, short: s.short, side: s.side || "", puckLabel: s.puckLabel || "", title: s.title, text: s.text, why: r[2], kind: s.kind || undefined, zones: r[3] ? r[3].map(function (z) { return z.slice(); }) : undefined });
       });
     });
     return out;
@@ -808,7 +817,7 @@
         id: String(p.id || ("p" + i)), sid: String(p.sid || p.id || ("s" + i)), role: p.role, phase: p.phase, has: p.has,
         puck: [Math.round(+p.puck[0]), Math.round(+p.puck[1])],
         spots: p.spots.map(function (s) { return [Math.round(+s[0]), Math.round(+s[1]), Math.round(+s[2])]; }),
-        carrier: ROLES[p.carrier] ? p.carrier : "", opp: Array.isArray(p.opp) ? p.opp.filter(function (o) { return Array.isArray(o) && o.length >= 2 && isFinite(o[0]) && isFinite(o[1]); }).map(function (o) { return oppLabel(o[2]) ? [Math.round(+o[0]), Math.round(+o[1]), oppLabel(o[2])] : [Math.round(+o[0]), Math.round(+o[1])]; }) : null, group: String(p.group || ""), short: String(p.short || ""), puckLabel: oppLabel(p.puckLabel), side: p.side === "left" || p.side === "right" ? p.side : "", title: String(p.title || ""), text: String(p.text || ""), why: String(p.why || "")
+        carrier: ROLES[p.carrier] ? p.carrier : "", opp: Array.isArray(p.opp) ? p.opp.filter(function (o) { return Array.isArray(o) && o.length >= 2 && isFinite(o[0]) && isFinite(o[1]); }).map(function (o) { return oppLabel(o[2]) ? [Math.round(+o[0]), Math.round(+o[1]), oppLabel(o[2])] : [Math.round(+o[0]), Math.round(+o[1])]; }) : null, group: String(p.group || ""), short: String(p.short || ""), puckLabel: oppLabel(p.puckLabel), side: p.side === "left" || p.side === "right" ? p.side : "", title: String(p.title || ""), text: String(p.text || ""), why: String(p.why || ""), kind: p.kind === "setup" ? "setup" : undefined, zones: Array.isArray(p.zones) ? p.zones.filter(function (z) { return Array.isArray(z) && (z.length === 4 || z.length === 5) && z.every(isFinite); }).map(function (z) { return z.map(Number); }) : undefined
       };
     });
   }
@@ -861,7 +870,7 @@
   function serialize() { return serializeList(PLAYS); }
   function serializeList(list) {
     return "[\n" + list.map(function (p) {
-      return JSON.stringify({ id: p.id, sid: p.sid, group: p.group, short: p.short, side: p.side, puckLabel: p.puckLabel, role: p.role, phase: p.phase, has: p.has, puck: p.puck, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why });
+      return JSON.stringify({ id: p.id, sid: p.sid, group: p.group, short: p.short, side: p.side, puckLabel: p.puckLabel, role: p.role, phase: p.phase, has: p.has, puck: p.puck, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why, kind: p.kind, zones: p.zones });
     }).join(",\n") + "\n]";
   }
   function uid() { return "p" + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36); }
@@ -1026,10 +1035,14 @@
     addChip(row, "Clear", null, function () { learnSel = []; learnOpp = false; learnPop = null; renderLearn(); }, true);
 
     var first = group[0];
+    var setup = first.kind === "setup";
     var focus = learnSel.length ? learnSel[learnSel.length - 1] : null;
     var carrierShown = !!first.carrier && learnSel.indexOf(first.carrier) >= 0;
-    carrierAndPuck(learnRink.layer, first, carrierShown);
-    if (focus) playFor(group, focus).spots.forEach(function (s) { goodArea(learnRink.layer, s, false); });
+    if (setup) drawSetup(learnRink.layer, group, learnSel);
+    else {
+      carrierAndPuck(learnRink.layer, first, carrierShown);
+      if (focus) playFor(group, focus).spots.forEach(function (s) { goodArea(learnRink.layer, s, false); });
+    }
     var triangle = learnZone === "oz" && ["F1", "F2", "F3"].every(function (r) { return learnSel.indexOf(r) >= 0; });
     if (triangle) {
       var tri = ["F1", "F2", "F3"].map(function (r) { var q = playFor(group, r); return P(q.spots[0][0], q.spots[0][1]).join(","); }).join(" ");
@@ -1044,7 +1057,7 @@
 
     card.innerHTML = "";
     if (!learnSel.length) {
-      var tip = document.createElement("div"); tip.className = "tip"; tip.style.marginTop = "0"; tip.textContent = "Tap a player above to see where they go."; card.appendChild(tip);
+      var tip = document.createElement("div"); tip.className = "tip"; tip.style.marginTop = "0"; tip.textContent = setup ? "Tap a player above to see the zone they cover." : "Tap a player above to see where they go."; card.appendChild(tip);
     } else {
       learnSel.slice().reverse().forEach(function (r, n) {
         var q = playFor(group, r);
@@ -1056,13 +1069,42 @@
         var pp = document.createElement("p"); pp.textContent = q.why || "No explanation yet."; body.appendChild(pp);
         item.appendChild(body); card.appendChild(item);
       });
-      var intro = document.createElement("p"); intro.className = "muted"; intro.style.marginTop = "14px"; intro.textContent = ROLES[focus].intro; card.appendChild(intro);
+      if (!setup) { var intro = document.createElement("p"); intro.className = "muted"; intro.style.marginTop = "14px"; intro.textContent = ROLES[focus].intro; card.appendChild(intro); }
       if (triangle) {
         var tn = document.createElement("div"); tn.className = "tip";
         tn.textContent = first.has === "us" ? "The green triangle shows F1, F2, and F3 working together. F1 has the puck and F3, the hawk, is open for the pass." : "The green triangle shows F1, F2, and F3 working together. F1 and F2 give their defenseman two-man pressure, and F3 waits for the pass.";
         card.appendChild(tn);
       }
     }
+    if (setup) { var note = document.createElement("div"); note.className = "tip"; note.textContent = "Always stay between the other team and our net. Protect the danger zone with your stick on the ice."; card.appendChild(note); }
+  }
+
+  /* ---------- LEARN: set up the house (zone coverage) ---------- */
+  // The danger zone (the home plate shape in front of our net). The zones themselves are stored with each position in plays.json.
+  var HOUSE = [[150, 61.5], [150, 193.5], [75, 193.5], [33, 136.5], [33, 118.5], [75, 61.5]];
+  function drawSetup(layer, group, sel) {
+    var art = el("g", { transform: "matrix(0 -1 1 0 0 600)" }, layer);
+    var cp = el("clipPath", { id: "zoneclip" }, art);
+    el("rect", { x: 5, y: 5, width: 590, height: 245, rx: 66 }, cp);
+    var zg = el("g", { "clip-path": "url(#zoneclip)" }, art);
+    var drawn = {}, labels = [];
+    // a player's own zone first, then the center's, so a zone is never drawn twice
+    sel.slice().sort(function (a, b) { return (a === "C" ? 1 : 0) - (b === "C" ? 1 : 0); }).forEach(function (r) {
+      var q = playFor(group, r);
+      var own = !!q && (q.zones || []).length === 1;
+      ((q && q.zones) || []).forEach(function (z) {
+        var key = z.join(",");
+        if (drawn[key]) return;
+        drawn[key] = true;
+        if (z.length === 5) el("ellipse", { cx: z[0], cy: z[1], rx: z[2], ry: z[3], transform: "rotate(" + z[4] + " " + z[0] + " " + z[1] + ")", fill: "rgba(139,196,63,0.30)", stroke: "#4F8A12", "stroke-width": 2 }, zg);
+        else el("rect", { x: z[0], y: z[1], width: z[2] - z[0], height: z[3] - z[1], fill: own ? "rgba(139,196,63,0.34)" : "rgba(139,196,63,0.22)", stroke: "#4F8A12", "stroke-width": own ? 2.2 : 1.6 }, zg);
+        if (own && z.length === 4) labels.push([z[2] > 150 ? z[2] - 16 : z[0] + 18, z[1] < 10 ? z[1] + 57 : z[3] - 57, ROLES[r].letter + " zone"]);
+      });
+    });
+    el("polygon", { points: HOUSE.map(function (p) { return P(p[0], p[1]).join(","); }).join(" "), fill: "none", stroke: "#C77D0A", "stroke-width": 3, "stroke-dasharray": "8 5", "stroke-linejoin": "round" }, layer);
+    function label(x, y, t, size, fill) { var c = P(x, y); el("text", { x: c[0], y: c[1], "text-anchor": "middle", "font-size": size, "font-weight": 800, fill: fill, "font-family": "Nunito Sans, sans-serif", "pointer-events": "none" }, layer).textContent = t; }
+    label(140, 106, "Danger", 8.5, "#9A5F05"); label(130, 106, "zone", 8.5, "#9A5F05");
+    labels.forEach(function (l) { label(l[0], l[1], l[2], 10.5, "#3E7A0E"); });
   }
 
   /* ---------- LEARN: the forecheck rotation ---------- */
@@ -1253,7 +1295,7 @@
   var order = [], idx = 0, pts = 0, streak = 0, bestStreak = 0, right = 0, answered = false;
 
   function inArea(p) { return p.phase === area; }
-  function filtered() { return PLAYS.filter(function (p) { return inArea(p) && p.carrier !== p.role && (posFilter === "any" || p.role === posFilter); }); }
+  function filtered() { return PLAYS.filter(function (p) { return inArea(p) && p.kind !== "setup" && p.carrier !== p.role && (posFilter === "any" || p.role === posFilter); }); }
   function renderStart() {
     var areas = [{ key: "dz", label: "Our zone" }, { key: "oz", label: "Their zone" }];
     chipRow($("areaRow"), "Pick a zone", areas, area, function (k) { area = k; renderStart(); });
@@ -1553,9 +1595,11 @@
     if (!g.length) return;
     setZone(coachRink, g[0].phase);
     var first = g[0];
-    var pg = carrierAndPuck(layer, first, !!first.carrier && !!playFor(g, first.carrier));
-    pg.style.cursor = "grab";
-    pg.addEventListener("pointerdown", function (e) { startDrag(e, { type: "puck" }); });
+    if (first.kind !== "setup") {
+      var pg = carrierAndPuck(layer, first, !!first.carrier && !!playFor(g, first.carrier));
+      pg.style.cursor = "grab";
+      pg.addEventListener("pointerdown", function (e) { startDrag(e, { type: "puck" }); });
+    } else drawSetup(layer, g, ["LW", "RW", "LD", "RD"]);
     g.forEach(function (q) {
       q.spots.forEach(function (s, i) {
         if (q.role === selRole && i === sel) goodArea(layer, s, true);
