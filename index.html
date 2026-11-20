@@ -332,6 +332,7 @@
         <li>In Their zone, open Win the puck to watch F1 pressure, F2 support, and F3 get open once F1 wins the puck.</li>
         <li>In Their zone, open the Rotation play and tap Next to watch the forwards switch jobs when the puck moves to the other corner.</li>
         <li>In Our zone, the House button shows the four zones over any play, so you can see who covers what.</li>
+        <li>In Their zone, the Scoring button shows the scoring zone in front of their net.</li>
         <li>Plays in red are when they have the puck. Plays in green are when we have it.</li>
       </ul>
       <h3>Play</h3>
@@ -921,7 +922,10 @@
   var LAYERS = [
     { id: "house", zone: "dz", label: "House",
       ready: function () { return !!playFor(groupFor("dzSet"), "LW"); },
-      draw: function (layer) { drawSetup(layer, groupFor("dzSet"), ["LW", "RW", "LD", "RD"]); } }
+      draw: function (layer) { drawSetup(layer, groupFor("dzSet"), ["LW", "RW", "LD", "RD"]); } },
+    { id: "scoring", zone: "oz", label: "Scoring",
+      ready: function () { return true; },
+      draw: function (layer) { drawScoring(layer); } }
   ];
   // One "play" is everything that shares a group and a short name; its left and right versions are separate situations.
   function playsInZone(phase) {
@@ -1096,6 +1100,15 @@
   /* ---------- LEARN: set up the house (zone coverage) ---------- */
   // The danger zone (the home plate shape in front of our net). The zones themselves are stored with each position in plays.json.
   var HOUSE = [[150, 61.5], [150, 193.5], [75, 193.5], [33, 136.5], [33, 118.5], [75, 61.5]];
+  // The scoring zone in their end: the same shape as our danger zone, turned around their net.
+  var SCORING = HOUSE.map(function (p) { return [600 - p[0], p[1]]; });
+  function drawScoring(layer) {
+    el("polygon", { points: SCORING.map(function (p) { return P(p[0], p[1]).join(","); }).join(" "), fill: "rgba(199,125,10,0.16)", stroke: "#C77D0A", "stroke-width": 3, "stroke-dasharray": "8 5", "stroke-linejoin": "round" }, layer);
+    [[470, 106, "Scoring"], [460, 106, "zone"]].forEach(function (l) {
+      var c = P(l[0], l[1]);
+      el("text", { x: c[0], y: c[1], "text-anchor": "middle", "font-size": 8.5, "font-weight": 800, fill: "#9A5F05", "font-family": "Nunito Sans, sans-serif", "pointer-events": "none" }, layer).textContent = l[2];
+    });
+  }
   function drawSetup(layer, group, sel) {
     var art = el("g", { transform: "matrix(0 -1 1 0 0 600)" }, layer);
     var cp = el("clipPath", { id: "zoneclip" }, art);
@@ -1110,15 +1123,15 @@
         var key = z.join(",");
         if (drawn[key]) return;
         drawn[key] = true;
-        if (z.length === 5) el("ellipse", { cx: z[0], cy: z[1], rx: z[2], ry: z[3], transform: "rotate(" + z[4] + " " + z[0] + " " + z[1] + ")", fill: "rgba(139,196,63,0.30)", stroke: "#4F8A12", "stroke-width": 2 }, zg);
-        else el("rect", { x: z[0], y: z[1], width: z[2] - z[0], height: z[3] - z[1], fill: own ? "rgba(139,196,63,0.34)" : "rgba(139,196,63,0.22)", stroke: "#4F8A12", "stroke-width": own ? 2.2 : 1.6 }, zg);
+        if (z.length === 5) el("ellipse", { cx: z[0], cy: z[1], rx: z[2], ry: z[3], transform: "rotate(" + z[4] + " " + z[0] + " " + z[1] + ")", fill: "rgba(199,125,10,0.24)", stroke: "#C77D0A", "stroke-width": 2 }, zg);
+        else el("rect", { x: z[0], y: z[1], width: z[2] - z[0], height: z[3] - z[1], fill: own ? "rgba(199,125,10,0.26)" : "rgba(199,125,10,0.16)", stroke: "#C77D0A", "stroke-width": own ? 2.2 : 1.6 }, zg);
         if (own && z.length === 4) labels.push([z[2] > 150 ? z[2] - 16 : z[0] + 18, z[1] < 10 ? z[1] + 57 : z[3] - 57, ROLES[r].letter + " zone"]);
       });
     });
     el("polygon", { points: HOUSE.map(function (p) { return P(p[0], p[1]).join(","); }).join(" "), fill: "none", stroke: "#C77D0A", "stroke-width": 3, "stroke-dasharray": "8 5", "stroke-linejoin": "round" }, layer);
     function label(x, y, t, size, fill) { var c = P(x, y); el("text", { x: c[0], y: c[1], "text-anchor": "middle", "font-size": size, "font-weight": 800, fill: fill, "font-family": "Nunito Sans, sans-serif", "pointer-events": "none" }, layer).textContent = t; }
     label(140, 106, "Danger", 8.5, "#9A5F05"); label(130, 106, "zone", 8.5, "#9A5F05");
-    labels.forEach(function (l) { label(l[0], l[1], l[2], 10.5, "#3E7A0E"); });
+    labels.forEach(function (l) { label(l[0], l[1], l[2], 10.5, "#9A5F05"); });
   }
 
   /* ---------- LEARN: the forecheck rotation ---------- */
