@@ -468,7 +468,7 @@
       <div class="rink-wrap" style="margin-top:14px">
         <div id="coachRink"></div>
         <div class="legend">
-          <span>Drag the puck, any green player, or any red circle (the other team)</span>
+          <span>Drag the puck (it moves on its own), any green player, or any red circle, including the one carrying the puck</span>
           <span><i class="dot" style="background:rgba(139,196,63,0.35);border:2px solid #4F8A12"></i>Selected player’s good area</span>
         </div>
       </div>
@@ -540,7 +540,7 @@
             <input type="text" id="cOppLabel" maxlength="3" placeholder="Tap a red player" disabled>
           </div>
           <div class="field">
-            <label for="cPuckLabel">Letter on their puck carrier</label>
+            <label for="cPuckLabel">Letter on the other team’s player with the puck</label>
             <input type="text" id="cPuckLabel" maxlength="3">
           </div>
         </div>
@@ -672,13 +672,20 @@
     var c = P(px, py), x = c[0], y = c[1];
     return el("circle", { cx: x, cy: y, r: 4.8, fill: NAVY, stroke: "#fff", "stroke-width": 1.4 }, layer);
   }
-  function carrierAndPuck(layer, p, skipDot) {
+  // The puck is its own item (p.disc). The player who has it is a separate token: one of ours (standing at his own spot) or one of theirs (p.puck, which sits just left of the puck by default).
+  function discOf(p) { return p.disc || [p.puck[0] + 6, p.puck[1] + 3]; }
+  function carrierToken(p) {
+    if (p.has === "us" && p.carrier) { var q = playFor(groupFor(p.sid), p.carrier); if (q && q.spots[0]) return [q.spots[0][0], q.spots[0][1]]; }
+    return [p.puck[0] - 9, p.puck[1]];
+  }
+  function carrierAndPuck(layer, p, skipDot, noDisc) {
     var g = el("g", {}, layer);
+    g.tok = null;
     if (!skipDot) {
-      var us = p.has === "us";
-      player(g, p.puck[0] - 9, p.puck[1], us ? LIME : RED, us ? (p.carrier ? ROLES[p.carrier].letter : "") : (p.puckLabel || ""), false);
+      var us = p.has === "us", t = carrierToken(p);
+      g.tok = player(g, t[0], t[1], us ? LIME : RED, us ? (p.carrier ? ROLES[p.carrier].letter : "") : (p.puckLabel || ""), false);
     }
-    puckDot(g, p.puck[0] + 6, p.puck[1] + 3);
+    if (!noDisc) { var d = discOf(p); puckDot(g, d[0], d[1]); }
     return g;
   }
   function goodArea(layer, s, selected) {
@@ -805,7 +812,7 @@
     SETS.forEach(function (s) {
       s.roles.forEach(function (r) {
         out.push({ id: s.k + "-" + r[0], sid: s.k, role: r[0], phase: s.phase, has: s.has,
-          puck: s.puck.slice(), opp: (s.opp || []).map(function (o) { return o.slice(); }), carrier: s.carrier || "", spots: [r[1].slice()], group: s.group, short: s.short, side: s.side || "", puckLabel: s.puckLabel || "", title: s.title, text: s.text, why: r[2], kind: s.kind || undefined, zones: r[3] ? r[3].map(function (z) { return z.slice(); }) : undefined });
+          puck: s.puck.slice(), disc: [s.puck[0] + 6, s.puck[1] + 3], opp: (s.opp || []).map(function (o) { return o.slice(); }), carrier: s.carrier || "", spots: [r[1].slice()], group: s.group, short: s.short, side: s.side || "", puckLabel: s.puckLabel || "", title: s.title, text: s.text, why: r[2], kind: s.kind || undefined, zones: r[3] ? r[3].map(function (z) { return z.slice(); }) : undefined });
       });
     });
     return out;
@@ -824,6 +831,7 @@
       return {
         id: String(p.id || ("p" + i)), sid: String(p.sid || p.id || ("s" + i)), role: p.role, phase: p.phase, has: p.has,
         puck: [Math.round(+p.puck[0]), Math.round(+p.puck[1])],
+        disc: Array.isArray(p.disc) && p.disc.length === 2 && p.disc.every(isFinite) ? [Math.round(+p.disc[0]), Math.round(+p.disc[1])] : [Math.round(+p.puck[0]) + 6, Math.round(+p.puck[1]) + 3],
         spots: p.spots.map(function (s) { return [Math.round(+s[0]), Math.round(+s[1]), Math.round(+s[2])]; }),
         carrier: ROLES[p.carrier] ? p.carrier : "", opp: Array.isArray(p.opp) ? p.opp.filter(function (o) { return Array.isArray(o) && o.length >= 2 && isFinite(o[0]) && isFinite(o[1]); }).map(function (o) { return oppLabel(o[2]) ? [Math.round(+o[0]), Math.round(+o[1]), oppLabel(o[2])] : [Math.round(+o[0]), Math.round(+o[1])]; }) : null, group: String(p.group || ""), short: String(p.short || ""), puckLabel: oppLabel(p.puckLabel), side: p.side === "left" || p.side === "right" ? p.side : "", title: String(p.title || ""), text: String(p.text || ""), why: String(p.why || ""), kind: p.kind === "setup" ? "setup" : undefined, zones: Array.isArray(p.zones) ? p.zones.filter(function (z) { return Array.isArray(z) && (z.length === 4 || z.length === 5) && z.every(isFinite); }).map(function (z) { return z.map(Number); }) : undefined
       };
@@ -878,7 +886,7 @@
   function serialize() { return serializeList(PLAYS); }
   function serializeList(list) {
     return "[\n" + list.map(function (p) {
-      return JSON.stringify({ id: p.id, sid: p.sid, group: p.group, short: p.short, side: p.side, puckLabel: p.puckLabel, role: p.role, phase: p.phase, has: p.has, puck: p.puck, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why, kind: p.kind, zones: p.zones });
+      return JSON.stringify({ id: p.id, sid: p.sid, group: p.group, short: p.short, side: p.side, puckLabel: p.puckLabel, role: p.role, phase: p.phase, has: p.has, puck: p.puck, disc: p.disc, opp: p.opp, carrier: p.carrier, spots: p.spots, title: p.title, text: p.text, why: p.why, kind: p.kind, zones: p.zones });
     }).join(",\n") + "\n]";
   }
   function uid() { return "p" + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36); }
@@ -1192,9 +1200,9 @@
       if (step >= 2) carrierAndPuck(L, end, false);
       else {
         carrierAndPuck(L, start, true);
-        var p0 = P(start.puck[0] + 6, start.puck[1] + 3), p1 = P(end.puck[0] + 6, end.puck[1] + 3);
+        var ds = discOf(start), de = discOf(end), p0 = P(ds[0], ds[1]), p1 = P(de[0], de[1]);
         el("path", { d: "M" + p0[0] + "," + p0[1] + " Q" + (p0[0] + p1[0]) / 2 + "," + 5 + " " + p1[0] + "," + p1[1], fill: "none", stroke: NAVY, "stroke-width": 2.6, "stroke-dasharray": "7 5", "stroke-linecap": "round" }, L);
-        puckDot(L, end.puck[0] + 6, end.puck[1] + 3);
+        puckDot(L, de[0], de[1]);
         player(L, start.puck[0] - 9, start.puck[1], RED, start.puckLabel || "", false);
       }
     }
@@ -1630,9 +1638,8 @@
     setZone(coachRink, g[0].phase);
     var first = g[0];
     if (first.kind !== "setup") {
-      var pg = carrierAndPuck(layer, first, !!first.carrier && !!playFor(g, first.carrier));
-      pg.style.cursor = "grab";
-      pg.addEventListener("pointerdown", function (e) { startDrag(e, { type: "puck" }); });
+      var pg = carrierAndPuck(layer, first, !!first.carrier && !!playFor(g, first.carrier), true);
+      if (pg.tok) { pg.tok.style.cursor = "grab"; pg.tok.addEventListener("pointerdown", function (e) { startDrag(e, { type: "carrier" }); }); }
     } else drawSetup(layer, g, ["LW", "RW", "LD", "RD"]);
     g.forEach(function (q) {
       q.spots.forEach(function (s, i) {
@@ -1654,6 +1661,14 @@
         tg.addEventListener("pointerdown", function (e) { startDrag(e, { type: "spot", role: q.role, i: i }); });
       });
     });
+    if (first.kind !== "setup") drawCoachPuck(layer, first);
+  }
+  function drawCoachPuck(layer, first) {
+    var d = discOf(first), c = P(d[0], d[1]);
+    var pg = el("g", { style: "cursor:grab" }, layer);
+    el("circle", { cx: c[0], cy: c[1], r: 15, fill: "rgba(5,21,55,0.001)" }, pg);
+    puckDot(pg, d[0], d[1]);
+    pg.addEventListener("pointerdown", function (e) { startDrag(e, { type: "puck" }); });
   }
   function startDrag(e, d) {
     e.preventDefault(); e.stopPropagation();
@@ -1670,7 +1685,9 @@
     if (!drag) return;
     var g = curGroup(), pt = toSvg(e, coachRink.svg), x = clampX(pt[0]), y = clampY(pt[1]);
     if (drag.type === "puck") {
-      g.forEach(function (q) { q.puck = [x, y]; });
+      g.forEach(function (q) { q.disc = [x, y]; });
+    } else if (drag.type === "carrier") {
+      g.forEach(function (q) { q.puck = [x + 9, y]; });
     } else if (drag.type === "opp") {
       g.forEach(function (q) { var o = q.opp[drag.i]; if (o) q.opp[drag.i] = o[2] ? [x, y, o[2]] : [x, y]; });
     } else {
